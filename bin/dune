@@ -1,0 +1,4 @@
+(executable
+ (public_name magic_tree_fitter)
+ (name main)
+ (libraries magic_tree_fitter))
