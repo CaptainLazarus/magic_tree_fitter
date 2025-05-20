@@ -1,2 +1,5 @@
 (test
- (name test_magic_tree_fitter))
+ (name test_magic_tree_fitter)
+ (libraries alcotest magic_tree_fitter)
+ (deps
+  (glob_files %{project_root}/grammars/*.g4)))
