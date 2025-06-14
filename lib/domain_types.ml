@@ -1,12 +1,13 @@
 type symbol =
   | Terminal of string
   | NonTerminal of string
+  | Epsilon
 
 type production = symbol list
 
-type rule =
+type production_rule =
   { lhs : symbol
-  ; rhs : production list
+  ; rhs : production
   }
 
-type grammar = rule list
+type grammar = production_rule list

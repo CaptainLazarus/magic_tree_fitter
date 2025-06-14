@@ -1,6 +1,7 @@
 open Alcotest
 open Magic_tree_fitter.Grammar_reader
 open Magic_tree_fitter.Domain_types
+open Magic_tree_fitter.Grammar_reader_utils
 open Test_utils
 
 let test_remove_comments () =

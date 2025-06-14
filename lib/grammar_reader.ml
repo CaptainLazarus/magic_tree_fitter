@@ -1,4 +1,6 @@
 open Domain_types
+open Symbol_table
+open Grammar_reader_utils
 
 (* FILE READING *)
 let read_file path =
@@ -16,64 +18,26 @@ let remove_comments (input : string) : string =
   input |> Str.global_replace re_block "" |> Str.global_replace re_line "" |> String.trim
 ;;
 
-(* RULE READER *)
-let first_word (line : string) =
-  line
-  |> String.trim
-  |> String.split_on_char ' '
-  |> List.find_opt (fun token -> token <> "")
-  |> Option.value ~default:""
-;;
-
-(* This only checks if the first character is uppercase. 
-  Assumption : ANTLR grammar files only have no mixed case LHS productions *)
-let is_uppercase (s : string) : bool =
-  String.length s > 0 && Char.uppercase_ascii s.[0] = s.[0]
-;;
-
-let starts_with_single_quote (s : string) : bool = String.length s > 0 && s.[0] = '\''
-
-let starts_with_single_quote_or_is_uppercase (s : string) : bool =
-  List.exists (fun f -> f s) [ is_uppercase; starts_with_single_quote ]
-;;
-
-(* Skip lines until a lone semicolon is found *)
-let rec discard_rule (xs : string list) : string list =
-  match xs with
-  | [] -> []
-  | x :: xs' -> if x |> String.trim <> ";" then discard_rule xs' else xs'
-;;
-
-let extract_production (_s : string) : production = failwith "not implemented"
-
-let rec save_rule_helper (current_rule : rule) (xs : string list) : rule * string list =
-  match xs with
-  | [] -> current_rule, []
-  | x :: xs ->
-    let updated_current_rule =
-      { current_rule with rhs = extract_production x :: current_rule.rhs }
-    in
-    save_rule_helper updated_current_rule xs
-;;
-
-(*
-   basically, these are the lines for which it's guaranteed to start with a non terminal.
-    So take first line, make that as part of the lhs, and then rhs has to be filled in.
-*)
-let save_rule (xs : string list) : rule * string list =
-  match xs with
-  | [] -> failwith "tf?"
-  | x :: xs -> save_rule_helper { lhs = NonTerminal x; rhs = [] } xs
-;;
-
-(*
-   based on g4 file semantics. grammar, fragment and lexer lines are skipped. Only parser rules matter
-*)
-let is_parse_rule (s : string) : bool =
-  let word = first_word s in
-  match word with
-  | "" | " " | "grammar" | "fragment" -> false
-  | _ -> not (is_uppercase word)
+let expand_production (production_rules : (string * string list) list) =
+  let rec expand_rhs_helper lhs rhs acc =
+    match rhs with
+    | [] -> acc
+    | x :: xs (* x = Aa *) ->
+      expand_rhs_helper
+        lhs
+        xs
+        ((lhs, String.split_on_char ' ' x |> List.map String.trim) :: acc)
+  in
+  let expand_rhs (production_rule : string * string list) acc =
+    match production_rule with
+    | lhs, rhs (* rhs = [Aa ; Bb ; etc] *) -> expand_rhs_helper lhs rhs acc
+  in
+  let rec expand_production_helper (production_rules : (string * string list) list) acc =
+    match production_rules with
+    | [] -> acc
+    | x :: xs -> expand_production_helper xs (expand_rhs x acc)
+  in
+  expand_production_helper production_rules []
 ;;
 
 let convert_to_symbol (s : string) : symbol =
@@ -82,6 +46,8 @@ let convert_to_symbol (s : string) : symbol =
     if starts_with_single_quote s
     then Terminal (String.sub s 1 (String.length s - 2))
     else Terminal s
+  else if s = "epsilon"
+  then Epsilon
   else NonTerminal s
 ;;
 
@@ -89,44 +55,88 @@ let convert_to_production (prod : string) : symbol list =
   String.split_on_char ' ' prod |> List.map (fun s -> convert_to_symbol s)
 ;;
 
-let convert_to_productions (rhs : string) : production list =
-  String.split_on_char '|' rhs |> List.map (fun prod -> convert_to_production prod)
-;;
-
-let convert_to_rules (parse_rules : string list) : rule list =
-  parse_rules
-  |> List.map (fun x ->
-    match String.split_on_char ':' x with
-    | [ lhs_string; rhs_string ] ->
-      let lhs = NonTerminal (String.trim lhs_string) in
-      let rhs = convert_to_productions rhs_string in
-      { lhs; rhs }
-    | _ -> failwith "Invalid Rule Format")
-;;
-
 let filter_content (content : string) : string list =
   content |> String.split_on_char ';' |> List.filter is_parse_rule
 ;;
 
-(* |> List.map (fun x ->
-    match (String.split_on_char ':' x) with
-    | [lhs_string; rhs_string] -> 
-      let lhs = NonTerminal (String.trim lhs_string) in
-      let rhs = (String.split_on_char '|' rhs_string)
-      |> List.map (fun (prod) -> 
-        String.split_on_char ' ' prod |> List.map (fun s -> NonTerminal s)
-        ) in
-        {lhs ; rhs}
-    | _ -> failwith "Invalid Rule Format"
-    ) *)
-
-let extract_grammar_from_string (content : string) : grammar =
-  content |> filter_content |> convert_to_rules
+let split_rules (parse_rules : string list) : (string * string) list =
+  parse_rules
+  |> List.map (fun x -> String.split_on_char ':' x)
+  |> List.map (fun x -> List.nth x 0, List.nth x 1)
 ;;
 
-(* List.iter print_string ;
-  [] *)
+let split_rhs (production_rules : (string * string) list) : (string * string list) list =
+  production_rules
+  |> List.map (fun x ->
+    String.trim (fst x), String.split_on_char '|' (snd x) |> List.map String.trim)
+;;
 
-let extract_grammar (file : string) : grammar =
+let convert_plus_to_star (q : (string * string list) Queue.t) (s : string) : string list =
+  let base = String.sub s 0 (String.length s - 1) in
+  let base_star = base ^ "*" in
+  if not (has_seen base_star)
+  then (
+    mark_seen base_star;
+    let new_rule_1 = base_star, [ base; base_star ] in
+    let new_rule_2 = base_star, [ "epsilon" ] in
+    Queue.add new_rule_1 q;
+    Queue.add new_rule_2 q)
+  else ();
+  [ base; base ^ "*" ]
+;;
+
+let desugar_rhs (q : (string * string list) Queue.t) (rhs : string list) : symbol list =
+  let rec desugar_rhs_helper
+            (q : (string * string list) Queue.t)
+            (rhs : string list)
+            (acc : string list)
+    : string list
+    =
+    match rhs with
+    | [] -> List.rev acc
+    | x :: xs ->
+      let expanded = if ends_with_plus x then convert_plus_to_star q x else [ x ] in
+      desugar_rhs_helper q xs (List.rev_append expanded acc)
+  in
+  desugar_rhs_helper q rhs [] |> List.map convert_to_symbol
+;;
+
+let rec process_queue
+          (q : (string * string list) Queue.t)
+          (acc : (symbol * symbol list) list)
+  =
+  (* dump_queue q; *)
+  if Queue.is_empty q
+  then List.rev acc
+  else (
+    let lhs, rhs = Queue.take q in
+    let prod = convert_to_symbol lhs, desugar_rhs q rhs in
+    process_queue q (prod :: acc))
+;;
+
+let desugar_production_strings (production_tuples : (string * string list) list)
+  : (symbol * symbol list) list
+  =
+  let q = Queue.create () in
+  Queue.add_seq q (List.to_seq production_tuples);
+  process_queue q []
+;;
+
+let convert_to_grammar (xs : (symbol * symbol list) list) : grammar =
+  xs |> List.map (fun (lhs, rhs) -> { lhs; rhs })
+;;
+
+let extract_grammar_from_string (content : string) =
+  content
+  |> filter_content
+  |> split_rules
+  |> split_rhs
+  |> expand_production
+  |> fun x ->
+  (* dump x; *)
+  desugar_production_strings x |> dump_rules |> convert_to_grammar |> dump_grammar
+;;
+
+let extract_grammar (file : string) =
   read_file file |> remove_comments |> extract_grammar_from_string
 ;;
