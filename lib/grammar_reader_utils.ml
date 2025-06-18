@@ -6,8 +6,8 @@ let dump_single x =
   print_endline (String.concat " " (snd x))
 ;;
 
-let rec dump (x : (string * string list) list) =
-  match x with
+let rec dump (s : (string * string list) list) =
+  match s with
   | [] -> ()
   | x :: xs ->
     dump_single x;
@@ -64,6 +64,7 @@ let string_of_symbol = function
   | Terminal s -> "\"" ^ s ^ "\""
   | NonTerminal s -> s
   | Epsilon -> "ε"
+  | EOF -> "$"
 ;;
 
 let string_of_production = function

@@ -14,6 +14,7 @@ let pp_symbol fmt = function
   | Terminal t -> Format.fprintf fmt "Terminal(%s)" t
   | NonTerminal nt -> Format.fprintf fmt "NonTerminal(%S)" nt
   | Epsilon -> Format.fprintf fmt "Epsilon"
+  | EOF -> Format.fprintf fmt "EOF"
 ;;
 
 let symbol_testable = testable pp_symbol ( = )

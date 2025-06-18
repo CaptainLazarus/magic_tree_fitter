@@ -34,7 +34,7 @@ let expand_production (production_rules : (string * string list) list) =
   in
   let rec expand_production_helper (production_rules : (string * string list) list) acc =
     match production_rules with
-    | [] -> acc
+    | [] -> List.rev acc
     | x :: xs -> expand_production_helper xs (expand_rhs x acc)
   in
   expand_production_helper production_rules []
@@ -48,6 +48,8 @@ let convert_to_symbol (s : string) : symbol =
     else Terminal s
   else if s = "epsilon"
   then Epsilon
+  else if s = "EOF"
+  then EOF
   else NonTerminal s
 ;;
 
@@ -126,6 +128,8 @@ let convert_to_grammar (xs : (symbol * symbol list) list) : grammar =
   xs |> List.map (fun (lhs, rhs) -> { lhs; rhs })
 ;;
 
+(* Currentyl reading as a string -> list. Should go from string -> graph. Is muchh safer and easier*)
+
 let extract_grammar_from_string (content : string) =
   content
   |> filter_content
@@ -133,8 +137,8 @@ let extract_grammar_from_string (content : string) =
   |> split_rhs
   |> expand_production
   |> fun x ->
-  (* dump x; *)
-  desugar_production_strings x |> dump_rules |> convert_to_grammar |> dump_grammar
+  (* dump x ;*)
+  desugar_production_strings x |> convert_to_grammar
 ;;
 
 let extract_grammar (file : string) =
