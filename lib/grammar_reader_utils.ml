@@ -93,3 +93,10 @@ let dump_grammar (grammar : grammar) : grammar =
     grammar;
   grammar
 ;;
+
+let dump_symbol_set (s : SymbolSet.t) : unit =
+  let elems = SymbolSet.elements s in
+  let strs = List.map string_of_symbol elems in
+  let out = String.concat "; " strs in
+  print_endline ("{ " ^ out ^ " }")
+;;

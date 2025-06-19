@@ -8,6 +8,7 @@ let create_test ?(test_type = `Quick) name f = test_case name test_type f
 let create_test_suite (s : suite list) = List.map (fun (name, f) -> create_test name f) s
 let fixture_path = "../grammars/lisp.g4"
 let content = read_file fixture_path |> remove_comments
+let grammar = fixture_path |> extract_grammar
 
 (* Testables and pp *)
 let pp_symbol fmt = function
