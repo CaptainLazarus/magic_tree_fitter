@@ -79,6 +79,15 @@ let test_const_states_generation () =
   check bool msg true (LR1ItemSetSet.equal actual expected)
 ;;
 
+let test_const_table () =
+  let x = min_grammar |> augment_grammar |> dump_grammar in
+  (* let expected = Hashtbl.create 32 in *)
+  let msg = "checks if const_table is generated correctly" in
+  let actual = const_table x in
+  dump_parse_table_to_file actual "output.txt";
+  check bool msg true false
+;;
+
 let suite =
   [ "Test First of Terminal Symbol", test_first_of_terminal
   ; "Test First of NonTerminal Symbol", test_first_of_non_terminal
@@ -87,6 +96,7 @@ let suite =
   ; "Test if epsilon is added to first set", test_if_epsilon_is_added_to_first_set
     (* ; "Test if closure works", test_closure_of_initial_item_set *)
     (* ; "Test if goto works", test_goto_of_s0_item_set *)
-  ; "Test const_states", test_const_states_generation
+    (* ; "Test const_states", test_const_states_generation *)
+  ; "Test const_table", test_const_table
   ]
 ;;

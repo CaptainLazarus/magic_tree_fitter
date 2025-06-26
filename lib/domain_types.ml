@@ -54,7 +54,9 @@ type grammar = production_rule list
 
 type action =
   | Shift of int
-  | Reduce of int
+  | Reduce of production_rule
+  | Accept
+  | Goto of int
 
 type lr1_item = production_rule * int * symbol
 

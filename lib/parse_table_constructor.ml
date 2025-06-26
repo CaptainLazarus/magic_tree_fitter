@@ -131,7 +131,59 @@ let const_states (g : grammar) : LR1ItemSetSet.t =
     (SymbolSet.to_list symbol_set)
 ;;
 
-(* let const_states (g:grammar) =  *)
+let const_table_helper
+      (g : grammar)
+      (state_index : int)
+      ((production_rule, dot_position, lookahead) : lr1_item)
+      (parse_table : (int * symbol, action list) Hashtbl.t)
+      (state_list : LR1ItemSet.t list)
+  =
+  let sym = get_symbol_after_dot (production_rule, dot_position, lookahead) in
+  let current_actions =
+    if Hashtbl.mem parse_table (state_index, lookahead)
+    then Hashtbl.find parse_table (state_index, lookahead)
+    else []
+  in
+  match sym with
+  | None ->
+    let top_level_production = List.nth (get_lhs_productions g (NonTerminal "S'")) 0 in
+    if production_rule = top_level_production
+    then Hashtbl.add parse_table (state_index, EOF) (Accept :: current_actions)
+    else
+      Hashtbl.add
+        parse_table
+        (state_index, lookahead)
+        (Reduce production_rule :: current_actions)
+  | Some x ->
+    let next_state =
+      List.find_index
+        (fun z -> z = goto_items (List.nth state_list 0) lookahead)
+        state_list
+    in
+    (match next_state with
+     | None -> failwith "[404] State not found"
+     | Some state ->
+       (match x with
+        | NonTerminal _ ->
+          Hashtbl.add parse_table (state_index, x) (Goto state :: current_actions)
+        | Terminal _ ->
+          Hashtbl.add parse_table (state_index, x) (Shift state :: current_actions)
+        | Epsilon | EOF -> failwith "How'd you get here ?"))
+;;
+
+(* I think you can with epsilon, but I don't think so with bloody EOF. I literally remove it. *)
+
+let const_table (g : grammar) =
+  let state_list = g |> const_states |> LR1ItemSetSet.to_list in
+  let parse_table = Hashtbl.create ~random:false 0 in
+  List.iteri
+    (fun i x ->
+       List.iter
+         (fun y -> const_table_helper g i y parse_table state_list)
+         (LR1ItemSet.to_list x))
+    state_list;
+  parse_table
+;;
 
 (* Assuming EOF rule is at the top. This assumption is only for v1.0 *)
 (* EOF Problem *)
@@ -147,4 +199,12 @@ let augment_grammar (g : grammar) : grammar =
 
 (* 1. Augment grammar first. Add rule {lhs: s' , rhs : s}. *)
 (* : (int * symbol, action) Hashtbl.t *)
-let create_parse_table (g : grammar) = g |> augment_grammar |> dump_grammar
+let create_parse_table (g : grammar) : (int * symbol, action list) Hashtbl.t =
+  g
+  |> augment_grammar
+  |> dump_grammar
+  |> const_table
+  |> fun x ->
+  dump_parse_table_to_file x "output.txt";
+  x
+;;

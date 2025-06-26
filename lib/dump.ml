@@ -95,3 +95,64 @@ let dump_const_states (states : LR1ItemSetSet.t) : unit =
        print_endline "")
     states
 ;;
+
+let collect_symbols (tbl : (int * symbol, action list) Hashtbl.t) : symbol list =
+  Hashtbl.fold (fun (_, sym) _ acc -> SymbolSet.add sym acc) tbl SymbolSet.empty
+  |> SymbolSet.elements
+;;
+
+module IntSet = Set.Make (Int)
+
+let collect_states (tbl : (int * symbol, action list) Hashtbl.t) : int list =
+  Hashtbl.fold (fun (state, _) _ acc -> IntSet.add state acc) tbl IntSet.empty
+  |> IntSet.elements
+;;
+
+let string_of_action = function
+  | Shift n -> "S" ^ string_of_int n
+  | Reduce r ->
+    Printf.sprintf "R(%s→%s)" (string_of_symbol r.lhs) (string_of_production r.rhs)
+  | Accept -> "Acc"
+  | Goto n -> "G" ^ string_of_int n
+;;
+
+let string_of_action_list acts =
+  match acts with
+  | [] -> ""
+  | [ a ] -> string_of_action a
+  | _ ->
+    let inner = List.map string_of_action acts |> String.concat ", " in
+    "[" ^ inner ^ "]"
+;;
+
+let dump_parse_table_to_file
+      (tbl : (int * symbol, action list) Hashtbl.t)
+      (filename : string)
+  : unit
+  =
+  let oc = open_out filename in
+  let symbols = collect_symbols tbl in
+  let states = collect_states tbl in
+  let col_width = 20 in
+  let pad s = Printf.sprintf "%-*s" col_width s in
+  let fprintf = Printf.fprintf in
+  fprintf oc "%s" (pad "State");
+  List.iter (fun sym -> fprintf oc "%s" (pad (string_of_symbol sym))) symbols;
+  fprintf oc "\n";
+  List.iter
+    (fun state ->
+       fprintf oc "%s" (pad (string_of_int state));
+       List.iter
+         (fun sym ->
+            let entry =
+              match Hashtbl.find_opt tbl (state, sym) with
+              | Some actions -> string_of_action_list actions
+              | None -> ""
+            in
+            fprintf oc "%s" (pad entry))
+         symbols;
+       fprintf oc "\n")
+    states;
+  close_out oc;
+  print_endline "Dump complete"
+;;
