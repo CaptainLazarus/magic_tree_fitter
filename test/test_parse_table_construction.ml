@@ -1,10 +1,9 @@
 open Alcotest
 open Magic_tree_fitter.Parse_table_constructor
 open Magic_tree_fitter.Domain_types
-
-(* open Magic_tree_fitter.Grammar_reader *)
+open Magic_tree_fitter.Dump
 open Test_utils
-open Magic_tree_fitter.Grammar_reader_utils
+(* open Magic_tree_fitter.Symbol_table *)
 
 let test_first_of_terminal () =
   let x = [] in
@@ -58,11 +57,36 @@ let test_if_epsilon_is_added_to_first_set () =
   check bool msg true (SymbolSet.equal actual expected)
 ;;
 
+let test_closure_of_initial_item_set () =
+  let x = grammar in
+  let initial_item : lr1_item = List.hd x, 0, EOF in
+  let initial_item_set = closure x (LR1ItemSet.add initial_item LR1ItemSet.empty) in
+  let expected = LR1ItemSet.empty in
+  let msg = "checks if closure is correct for s0 of the augmented production" in
+  let actual = closure x initial_item_set in
+  dump_lr1_set expected;
+  dump_lr1_set actual;
+  check bool msg true (LR1ItemSet.equal actual expected)
+;;
+
+let test_const_states_generation () =
+  let x = min_grammar |> augment_grammar |> dump_grammar in
+  let expected = LR1ItemSetSet.empty in
+  let msg = "checks if const_states is generated correctly" in
+  let actual = const_states x in
+  dump_const_states expected;
+  dump_const_states actual;
+  check bool msg true (LR1ItemSetSet.equal actual expected)
+;;
+
 let suite =
   [ "Test First of Terminal Symbol", test_first_of_terminal
   ; "Test First of NonTerminal Symbol", test_first_of_non_terminal
   ; ( "Test first of mutli symbol list with an epsilon fallthrough"
     , test_if_epsilon_causes_fallthrough_to_next_symbol )
   ; "Test if epsilon is added to first set", test_if_epsilon_is_added_to_first_set
+    (* ; "Test if closure works", test_closure_of_initial_item_set *)
+    (* ; "Test if goto works", test_goto_of_s0_item_set *)
+  ; "Test const_states", test_const_states_generation
   ]
 ;;

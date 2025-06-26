@@ -1,19 +1,3 @@
-open Domain_types
-
-let dump_single x =
-  print_string ("\n" ^ fst x);
-  print_string " -> ";
-  print_endline (String.concat " " (snd x))
-;;
-
-let rec dump (s : (string * string list) list) =
-  match s with
-  | [] -> ()
-  | x :: xs ->
-    dump_single x;
-    dump xs
-;;
-
 (* RULE READER *)
 let first_word (line : string) =
   line
@@ -53,50 +37,3 @@ let is_parse_rule (s : string) : bool =
 ;;
 
 let ends_with_plus s = String.length s > 0 && String.get s (String.length s - 1) = '+'
-
-let dump_queue (q : (string * string list) Queue.t) =
-  Printf.printf "Queue state:\n";
-  Queue.iter (fun (lhs, rhs) -> Printf.printf "%s -> %s\n" lhs (String.concat " " rhs)) q;
-  Printf.printf "------\n%!"
-;;
-
-let string_of_symbol = function
-  | Terminal s -> "\"" ^ s ^ "\""
-  | NonTerminal s -> s
-  | Epsilon -> "ε"
-  | EOF -> "$"
-;;
-
-let string_of_production = function
-  | [] -> "ε"
-  | symbols -> String.concat " " (List.map string_of_symbol symbols)
-;;
-
-let dump_rules (rules : (symbol * symbol list) list) =
-  print_endline "\nRules : ---------------\n";
-  List.iter
-    (fun (lhs, rhs) ->
-       let lhs_str = string_of_symbol lhs in
-       let rhs_str = string_of_production rhs in
-       Printf.printf "%s → %s\n" lhs_str rhs_str)
-    rules;
-  rules
-;;
-
-let dump_grammar (grammar : grammar) : grammar =
-  print_endline "\nGrammar : ===============\n";
-  List.iter
-    (fun { lhs; rhs } ->
-       let lhs_str = string_of_symbol lhs in
-       let rhs_str = string_of_production rhs in
-       Printf.printf "%s → %s\n" lhs_str rhs_str)
-    grammar;
-  grammar
-;;
-
-let dump_symbol_set (s : SymbolSet.t) : unit =
-  let elems = SymbolSet.elements s in
-  let strs = List.map string_of_symbol elems in
-  let out = String.concat "; " strs in
-  print_endline ("{ " ^ out ^ " }")
-;;

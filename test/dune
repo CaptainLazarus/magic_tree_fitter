@@ -3,3 +3,6 @@
  (libraries alcotest magic_tree_fitter)
  (deps
   (glob_files %{project_root}/grammars/*.g4)))
+
+  (copy_files %{project_root}/grammars/*.g4)
+
