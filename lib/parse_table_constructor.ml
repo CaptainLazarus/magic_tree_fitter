@@ -131,58 +131,132 @@ let const_states (g : grammar) : LR1ItemSetSet.t =
     (SymbolSet.to_list symbol_set)
 ;;
 
+let is_accepting (g : grammar) (p : production_rule) : bool =
+  match get_lhs_productions g (NonTerminal "S'") with
+  | top :: _ -> p = top
+  | [] -> false
+;;
+
+let get_next_state g (current : LR1ItemSet.t) (sym : symbol) (states : LR1ItemSet.t list)
+  : int option
+  =
+  (* let next = goto_items current sym in *)
+  let next = closure g (goto_items current sym) in
+  List.find_index (fun s -> LR1ItemSet.equal s next) states
+;;
+
+let add_action
+      (tbl : (int * symbol, action list) Hashtbl.t)
+      (state : int)
+      (sym : symbol)
+      (act : action)
+  : unit
+  =
+  let key = state, sym in
+  let existing = Hashtbl.find_opt tbl key |> Option.value ~default:[] in
+  if List.mem act existing then () else Hashtbl.replace tbl key (act :: existing)
+;;
+
+let const_table_helper_debug
+      (g : grammar)
+      (state_index : int)
+      ((p, dot_pos, lookahead) : lr1_item)
+      (tbl : (int * symbol, action list) Hashtbl.t)
+      (states : LR1ItemSet.t list)
+  =
+  print_endline "\n[const_table_helper]";
+  (* Printf.printf "  State index: %d\n" state_index; *)
+  (* Printf.printf "  Dot position: %d\n" dot_pos; *)
+  (* Printf.printf "  Lookahead: %s\n" (string_of_symbol lookahead); *)
+  (* Printf.printf *)
+  (*   "  Production: %s -> %s\n" *)
+  (*   (string_of_symbol p.lhs) *)
+  (*   (String.concat " " (List.map string_of_symbol p.rhs)); *)
+  (* Printf.printf "  Table size: %d\n" (Hashtbl.length tbl); *)
+  (* Printf.printf "  Total states: %d\n" (List.length states); *)
+  let current_state = List.nth states state_index in
+  match get_symbol_after_dot (p, dot_pos, lookahead) with
+  | None ->
+    (* Printf.printf "  Dot at end. "; *)
+    if is_accepting g p
+    then
+      (* Printf.printf "Inserting [Accept] action.\n"; *)
+      add_action tbl state_index EOF Accept
+    else
+      (* Printf.printf "Inserting [Reduce] for lookahead %s\n" (string_of_symbol lookahead); *)
+      add_action tbl state_index lookahead (Reduce p)
+  | Some Epsilon -> Printf.printf "  [Skip] Dot before Epsilon — skipping\n"
+  | Some sym ->
+    (* Printf.printf "  Dot before symbol: %s — computing GOTO...\n" (string_of_symbol sym); *)
+    let next_set = goto_items current_state sym in
+    if LR1ItemSet.is_empty next_set
+    then Printf.printf "  [Skip] GOTO(%d, %s) = ∅\n" state_index (string_of_symbol sym)
+    else (
+      let next_state = get_next_state g current_state sym states in
+      match next_state with
+      | None ->
+        Printf.printf
+          "  [404] GOTO(%d, %s) not in canonical states!\n"
+          state_index
+          (string_of_symbol sym);
+        Printf.printf "  Dumping computed next_set:\n";
+        dump_lr1_set next_set;
+        Printf.printf "  Dumping all canonical states:\n";
+        List.iteri
+          (fun i st ->
+             Printf.printf "  --- State %d ---\n" i;
+             dump_lr1_set st)
+          states;
+        failwith "[404] State not found"
+      | Some next ->
+        Printf.printf "  GOTO leads to state %d. Inserting action...\n" next;
+        (match sym with
+         | NonTerminal _ ->
+           Printf.printf "  Inserting [Goto %d]\n" next;
+           add_action tbl state_index sym (Goto next)
+         | Terminal _ ->
+           Printf.printf "  Inserting [Shift %d]\n" next;
+           add_action tbl state_index sym (Shift next)
+         | Epsilon | EOF -> failwith "Unexpected Epsilon or EOF in shift/goto"))
+;;
+
 let const_table_helper
       (g : grammar)
       (state_index : int)
-      ((production_rule, dot_position, lookahead) : lr1_item)
-      (parse_table : (int * symbol, action list) Hashtbl.t)
-      (state_list : LR1ItemSet.t list)
+      ((p, dot_pos, lookahead) : lr1_item)
+      (tbl : (int * symbol, action list) Hashtbl.t)
+      (states : LR1ItemSet.t list)
   =
-  let sym = get_symbol_after_dot (production_rule, dot_position, lookahead) in
-  let current_actions =
-    if Hashtbl.mem parse_table (state_index, lookahead)
-    then Hashtbl.find parse_table (state_index, lookahead)
-    else []
-  in
-  match sym with
+  let current_state = List.nth states state_index in
+  match get_symbol_after_dot (p, dot_pos, lookahead) with
   | None ->
-    let top_level_production = List.nth (get_lhs_productions g (NonTerminal "S'")) 0 in
-    if production_rule = top_level_production
-    then Hashtbl.add parse_table (state_index, EOF) (Accept :: current_actions)
-    else
-      Hashtbl.add
-        parse_table
-        (state_index, lookahead)
-        (Reduce production_rule :: current_actions)
-  | Some x ->
-    let next_state =
-      List.find_index
-        (fun z -> z = goto_items (List.nth state_list 0) lookahead)
-        state_list
-    in
-    (match next_state with
-     | None -> failwith "[404] State not found"
-     | Some state ->
-       (match x with
-        | NonTerminal _ ->
-          Hashtbl.add parse_table (state_index, x) (Goto state :: current_actions)
-        | Terminal _ ->
-          Hashtbl.add parse_table (state_index, x) (Shift state :: current_actions)
-        | Epsilon | EOF -> failwith "How'd you get here ?"))
+    if is_accepting g p
+    then add_action tbl state_index EOF Accept
+    else add_action tbl state_index lookahead (Reduce p)
+  | Some Epsilon -> ()
+  | Some sym ->
+    let next_set = goto_items current_state sym in
+    if not (LR1ItemSet.is_empty next_set)
+    then (
+      match get_next_state g current_state sym states with
+      | None -> failwith "[404] State not found"
+      | Some next ->
+        (match sym with
+         | NonTerminal _ -> add_action tbl state_index sym (Goto next)
+         | Terminal _ -> add_action tbl state_index sym (Shift next)
+         | Epsilon | EOF -> failwith "Unexpected Epsilon or EOF in shift/goto"))
 ;;
 
 (* I think you can with epsilon, but I don't think so with bloody EOF. I literally remove it. *)
 
-let const_table (g : grammar) =
-  let state_list = g |> const_states |> LR1ItemSetSet.to_list in
-  let parse_table = Hashtbl.create ~random:false 0 in
+let const_table (g : grammar) : (int * symbol, action list) Hashtbl.t =
+  let states = g |> const_states |> LR1ItemSetSet.to_list in
+  let tbl = Hashtbl.create ~random:false 0 in
   List.iteri
-    (fun i x ->
-       List.iter
-         (fun y -> const_table_helper g i y parse_table state_list)
-         (LR1ItemSet.to_list x))
-    state_list;
-  parse_table
+    (fun i state ->
+       LR1ItemSet.iter (fun item -> const_table_helper g i item tbl states) state)
+    states;
+  tbl
 ;;
 
 (* Assuming EOF rule is at the top. This assumption is only for v1.0 *)
@@ -197,14 +271,29 @@ let augment_grammar (g : grammar) : grammar =
   | [] -> failwith "Empty Grammar"
 ;;
 
+let reverse_grammar (g : grammar) : grammar =
+  List.map (fun { lhs; rhs } -> { lhs; rhs = List.rev rhs }) g
+;;
+
 (* 1. Augment grammar first. Add rule {lhs: s' , rhs : s}. *)
 (* : (int * symbol, action) Hashtbl.t *)
-let create_parse_table (g : grammar) : (int * symbol, action list) Hashtbl.t =
+let create_parse_table (g : grammar) (* : (int * symbol, action list) Hashtbl.t list  *) =
   g
   |> augment_grammar
-  |> dump_grammar
   |> const_table
   |> fun x ->
-  dump_parse_table_to_file x "output.txt";
+  dump_parse_table_to_file x ("parse_table_normal" ^ ".txt");
   x
+;;
+
+let create_parse_tables (g : grammar) (* : (int * symbol, action list) Hashtbl.t list  *) =
+  g
+  |> augment_grammar
+  |> fun x ->
+  [ x; reverse_grammar x ]
+  |> List.map dump_grammar
+  |> List.map const_table
+  |> List.mapi (fun i x ->
+    dump_parse_table_to_file x ("parse_table_" ^ string_of_int i ^ ".txt");
+    x)
 ;;

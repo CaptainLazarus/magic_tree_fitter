@@ -10,6 +10,7 @@ let fixture_path = "../grammars/lisp.g4"
 let content = read_file fixture_path |> remove_comments
 let grammar = fixture_path |> extract_grammar
 let min_grammar = "../grammars/min_grammar.g4" |> extract_grammar
+let min_grammar_epsilon = "../grammars/min_epsilon_grammar.g4" |> extract_grammar
 
 (* Testables and pp *)
 let pp_symbol fmt = function
