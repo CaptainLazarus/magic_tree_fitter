@@ -4,7 +4,9 @@ open Magic_tree_fitter.Parse_table_constructor
 let () =
   Printexc.record_backtrace true;
   try
-    let _grammar = "grammars/lisp.g4" |> extract_grammar |> create_parse_table in
+    let _grammar =
+      "grammars/grammar_in_paper.g4" |> extract_grammar |> create_parse_tables
+    in
     print_string "--------\n"
   with
   | exn ->
