@@ -59,8 +59,8 @@ let first (g : grammar) (s : symbol list) : SymbolSet.t =
     | Epsilon :: _ -> SymbolSet.add Epsilon acc
     | EOF :: _ -> SymbolSet.add EOF acc
   in
-  Printf.printf "\n[5] First\n";
-  flush stdout;
+  (* Printf.printf "\n[5] First\n"; *)
+  (* flush stdout; *)
   first_helper g s SymbolSet.empty SymbolSet.empty
 ;;
 
@@ -73,49 +73,49 @@ let get_set_product (productions : production_rule list) (symbols : SymbolSet.t)
 ;;
 
 let rec closure_helper (g : grammar) (work_list : lr1_item Queue.t) (s : LR1ItemSet.t) =
-  Printf.printf
-    "\n================================================================================\n";
-  Printf.printf "\n[4] Current worklist:\n";
-  Queue.iter dump_lr1_item work_list;
-  Printf.printf "\n[4] Current set:\n";
-  dump_lr1_set s;
-  flush stdout;
+  (* Printf.printf *)
+  (*   "\n================================================================================\n"; *)
+  (* Printf.printf "\n[4] Current worklist:\n"; *)
+  (* Queue.iter dump_lr1_item work_list; *)
+  (* Printf.printf "\n[4] Current set:\n"; *)
+  (* dump_lr1_set s; *)
+  (* flush stdout; *)
   if Queue.is_empty work_list
-  then (
-    Printf.printf "\n[4.1] Returned Set:\n";
-    dump_lr1_set s;
-    flush stdout;
-    s)
+  then
+    (* Printf.printf "\n[4.1] Returned Set:\n"; *)
+    (* dump_lr1_set s; *)
+    (* flush stdout; *)
+    s
   else (
     let p, j, a = Queue.take work_list in
     let sym = get_symbol_after_dot (p, j, a) in
     match sym with
     | Some current_symbol ->
-      Printf.printf "\n[4.2] Found a symbol: %s\n" (string_of_symbol current_symbol);
-      flush stdout;
+      (* Printf.printf "\n[4.2] Found a symbol: %s\n" (string_of_symbol current_symbol); *)
+      (* flush stdout; *)
       let lhs_productions = get_lhs_productions g current_symbol in
-      Printf.printf "\n[4.3] Got LHS productions\n";
-      flush stdout;
+      (* Printf.printf "\n[4.3] Got LHS productions\n"; *)
+      (* flush stdout; *)
       let remaining = get_remaining_symbols (p, j, a) in
-      Printf.printf "\n[4.4] Remaining Symbols\n";
-      flush stdout;
+      (* Printf.printf "\n[4.4] Remaining Symbols\n"; *)
+      (* flush stdout; *)
       let first_list = first_for_lookahead g (remaining @ [ a ]) in
-      Printf.printf "\n[4.5] First List\n";
-      flush stdout;
+      (* Printf.printf "\n[4.5] First List\n"; *)
+      (* flush stdout; *)
       let lr1_items_found = get_set_product lhs_productions first_list in
-      Printf.printf "\n[4.6] Set product found \n";
-      flush stdout;
+      (* Printf.printf "\n[4.6] Set product found \n"; *)
+      (* flush stdout; *)
       let filtered_seen_items =
         List.filter (fun x -> not (LR1ItemSet.mem x s)) lr1_items_found
       in
       let filtered_seen_items =
-        Printf.printf "Adding %d new items\n" (List.length filtered_seen_items);
-        flush stdout;
-        List.iter
-          (fun item ->
-             dump_lr1_item item;
-             flush stdout)
-          filtered_seen_items;
+        (* Printf.printf "Adding %d new items\n" (List.length filtered_seen_items); *)
+        (* flush stdout; *)
+        (* List.iter *)
+        (*   (fun item -> *)
+        (*      dump_lr1_item item; *)
+        (*      flush stdout) *)
+        (*   filtered_seen_items; *)
         filtered_seen_items
       in
       let _ = Queue.add_seq work_list (List.to_seq filtered_seen_items) in
@@ -125,8 +125,8 @@ let rec closure_helper (g : grammar) (work_list : lr1_item Queue.t) (s : LR1Item
 ;;
 
 let closure (g : grammar) (item_set : LR1ItemSet.t) : LR1ItemSet.t =
-  print_string "\n[2] Reached Closure Table\n";
-  flush stdout;
+  (* print_string "\n[2] Reached Closure Table\n"; *)
+  (* flush stdout; *)
   closure_helper g (Queue.of_seq (LR1ItemSet.to_seq item_set)) item_set
 ;;
 
@@ -168,11 +168,11 @@ let rec const_states_helper
 ;;
 
 let const_states (g : grammar) : LR1ItemSetSet.t =
-  print_string "\n[1] Reached Const States\n";
-  flush stdout;
+  (* print_string "\n[1] Reached Const States\n"; *)
+  (* flush stdout; *)
   let initial_item = List.hd g, 0, EOF in
-  print_string "\n[1.1] Const States -> Closure\n";
-  flush stdout;
+  (* print_string "\n[1.1] Const States -> Closure\n"; *)
+  (* flush stdout; *)
   let initial_item_set = closure g (LR1ItemSet.add initial_item LR1ItemSet.empty) in
   let work_list = Queue.create () in
   let symbol_set =
@@ -201,8 +201,8 @@ let get_next_state g (current : LR1ItemSet.t) (sym : symbol) (states : LR1ItemSe
   : int option
   =
   (* let next = goto_items current sym in *)
-  print_string "\n[3] Get Next State -> Closure\n";
-  flush stdout;
+  (* print_string "\n[3] Get Next State -> Closure\n"; *)
+  (* flush stdout; *)
   let next = closure g (goto_items current sym) in
   List.find_index (fun s -> LR1ItemSet.equal s next) states
 ;;
@@ -261,9 +261,9 @@ let const_table_helper_debug
           "  [404] GOTO(%d, %s) not in canonical states!\n"
           state_index
           (string_of_symbol sym);
-        Printf.printf "  Dumping computed next_set:\n";
-        dump_lr1_set next_set;
-        Printf.printf "  Dumping all canonical states:\n";
+        (* Printf.printf "  Dumping computed next_set:\n"; *)
+        (* dump_lr1_set next_set; *)
+        (* Printf.printf "  Dumping all canonical states:\n"; *)
         List.iteri
           (fun i st ->
              Printf.printf "  --- State %d ---\n" i;
@@ -312,7 +312,7 @@ let const_table_helper
 (* I think you can with epsilon, but I don't think so with bloody EOF. I literally remove it. *)
 
 let const_table (g : grammar) : (int * symbol, action list) Hashtbl.t =
-  print_string "\n[0] Reached Const Table\n";
+  (* print_string "\n[0] Reached Const Table\n"; *)
   let states = g |> const_states |> LR1ItemSetSet.to_list in
   let tbl = Hashtbl.create ~random:false 0 in
   List.iteri

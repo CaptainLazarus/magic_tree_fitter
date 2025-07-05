@@ -126,6 +126,7 @@ let test_closure_is_idempotent_for_initial_item_set () =
   check bool msg true (LR1ItemSet.equal actual expected)
 ;;
 
+(* TODO : How the absolute fuck is the test not passing ? Running this on main you get the right grammar. Fuckin hell. Find out cause and fix this. State due to seen symbols ?*)
 let test_closure_multiple_lookaheads () =
   (* Grammar: 
      S' → s

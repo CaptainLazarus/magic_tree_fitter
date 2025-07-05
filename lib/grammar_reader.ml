@@ -97,6 +97,8 @@ let desugar_rhs (q : (string * string list) Queue.t) (rhs : string list) : symbo
     match rhs with
     | [] -> List.rev acc
     | x :: xs ->
+      (* Printf.printf "x : %s" x; *)
+      (* flush stdout; *)
       let expanded = if ends_with_plus x then convert_plus_to_star q x else [ x ] in
       desugar_rhs_helper q xs (List.rev_append expanded acc)
   in

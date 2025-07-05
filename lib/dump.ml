@@ -53,6 +53,7 @@ let dump_grammar (grammar : grammar) : grammar =
        let rhs_str = string_of_production rhs in
        Printf.printf "%s → %s\n" lhs_str rhs_str)
     grammar;
+  flush stdout;
   grammar
 ;;
 
