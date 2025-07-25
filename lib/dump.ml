@@ -157,3 +157,7 @@ let dump_parse_table_to_file
   close_out oc;
   print_endline "Dump complete"
 ;;
+
+let dump_token_info { token; lexeme } =
+  Printf.sprintf "{ token = %s; lexeme = \"%s\" }" (string_of_symbol token) lexeme
+;;

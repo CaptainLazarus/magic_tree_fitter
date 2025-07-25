@@ -84,3 +84,8 @@ module ItemSetOrd = struct
 end
 
 module LR1ItemSetSet = Set.Make (ItemSetOrd)
+
+type token_info =
+  { token : symbol
+  ; lexeme : string
+  }

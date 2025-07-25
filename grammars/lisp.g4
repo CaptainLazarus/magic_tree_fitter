@@ -35,36 +35,25 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 grammar lisp;
 
-lisp_
-    : s_expression+ EOF
+// Parser rules
+lisp_ : s_expression+ EOF ;
+
+s_expression 
+    : ATOM
+    | LPAREN s_expression DOT s_expression RPAREN  // dotted pair
+    | list 
     ;
 
-s_expression
-    : ATOMIC_SYMBOL
-    | '(' s_expression '.' s_expression ')'
-    | list
-    ;
+list : LPAREN s_expression* RPAREN ;
 
-list
-    : '(' s_expression+ ')'
-    ;
+// Lexer rules
+LPAREN : '(' ;
+RPAREN : ')' ;
+DOT : '.' ;
 
-ATOMIC_SYMBOL
-    : LETTER ATOM_PART?
-    ;
+ATOM : (LETTER | DIGIT) (LETTER | DIGIT)* ;
 
-fragment ATOM_PART
-    : (LETTER | NUMBER) ATOM_PART
-    ;
+fragment LETTER : [a-zA-Z] ;
+fragment DIGIT : [0-9] ;
 
-fragment LETTER
-    : [a-z]
-    ;
-
-fragment NUMBER
-    : [1-9]
-    ;
-
-WS
-    : [ \r\n\t]+ -> skip
-    ;
+WS : [ \r\n\t]+ -> skip ;

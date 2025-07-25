@@ -270,8 +270,8 @@ let test_debug_const_states () =
   assert false
 ;;
 
-let first = []
-let closure = []
+(* let first = [] *)
+(* let closure = [] *)
 
 let suite =
   [ "First of terminal", test_first_of_terminal
