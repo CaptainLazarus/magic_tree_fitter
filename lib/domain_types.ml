@@ -89,3 +89,5 @@ type token_info =
   { token : symbol
   ; lexeme : string
   }
+
+type lr_table = (int * symbol, action list) Hashtbl.t

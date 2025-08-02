@@ -7,7 +7,6 @@ let () =
   try
     let _grammar =
       let parse_tables = "grammars/lisp.g4" |> extract_grammar |> create_parse_tables in
-      let _input = run_java_and_read_output () |> dump_token_list in
       get_ast parse_tables
     in
     print_string "--------\n"

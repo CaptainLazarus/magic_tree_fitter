@@ -1,0 +1,47 @@
+open Magic_tree_fitter.Core_algo;;
+open Magic_tree_fitter.Domain_types;;
+open Magic_tree_fitter.Grammar_reader;;
+open Magic_tree_fitter.Symbol_table;;
+open Magic_tree_fitter.Parse_table_constructor;;
+open Magic_tree_fitter.Grammar_reader_utils;;
+open Magic_tree_fitter.Dump;;
+open Magic_tree_fitter.Gss;;
+open Magic_tree_fitter.Sppf;;
+open Yojson.Basic.Util;;
+let parse_tables = "grammars/lisp.g4" |> extract_grammar |> create_parse_tables;;
+
+let tokens = run_java_and_read_output ();;
+  let token_info_list : token_info list =
+    List.map
+      (fun (x : Yojson.Basic.t) ->
+         { token = x |> member "token" |> to_string |> convert_to_symbol
+         ; lexeme = x |> member "lexeme" |> to_string
+         })
+      tokens
+;;
+let selected_token : token_info option = most_common_terminal token_info_list;;
+let t = match selected_token with | None -> failwith "No anchor symbol" | Some t -> t;;
+let forward_states, reverse_states = initial_states_for_terminal parse_tables t.token;;
+    let forward_anchor_nodes : gss_node list =
+      List.map
+        (fun (x, y) -> { state = x; edges = [ t, y ]; parents = []; next_actions = [] })
+        forward_states;;
+let backward_anchor_nodes : gss_node list =
+      List.map
+        (fun (x, y) -> { state = x; edges = [ t, y ]; parents = []; next_actions = [] })
+        reverse_states;;
+let root_node = List.hd forward_anchor_nodes
+let find_next_actions root_node sym parse_table =
+  let find_next_actions_helper
+        (state : int)
+        (sym : symbol)
+        (parse_table : (int * symbol, action list) Hashtbl.t)
+    =
+    match Hashtbl.find_opt parse_table (state, sym) with
+    | None -> []
+    | Some s -> s
+  in
+  root_node.edges
+  |> List.map (fun (x, y) -> find_next_actions_helper y sym parse_table, (x, y))
+;;
+let next_actions = find_next_actions root_node next_sym (get_forward_parse_table parse_tables)
