@@ -4,7 +4,9 @@
  (name magic_tree_fitter)
  (libraries str unix yojson)
  ; (modules core_algo domain_types grammar_reader symbol_table parse_table_constructor grammar_reader_utils dump gss sppf)
- (flags (:standard -w -26-27-32)) )
+ (flags (:standard -w -26-27-32)) 
+(modes byte native)
+ )
 
 
 ; (env

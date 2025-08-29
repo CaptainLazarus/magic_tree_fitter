@@ -7,6 +7,11 @@ open Magic_tree_fitter.Grammar_reader_utils;;
 open Magic_tree_fitter.Dump;;
 open Magic_tree_fitter.Gss;;
 open Magic_tree_fitter.Sppf;;
+open  Magic_tree_fitter.Gss_Parser;;
+open  Magic_tree_fitter.Gss_stack;;
+open  Magic_tree_fitter.Gss_debug;;
+open  Magic_tree_fitter.Gss_actions;;
+ 
 open Yojson.Basic.Util;;
 let parse_tables = "grammars/lisp.g4" |> extract_grammar |> create_parse_tables;;
 
