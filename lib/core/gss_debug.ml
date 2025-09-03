@@ -1,44 +1,44 @@
-open Gss
+(* open Gss *)
 
-let debug_iteration_start stacks_count =
-  Printf.printf "construct_ast: processing %d stacks\n%!" stacks_count
-;;
+(* let debug_iteration_start stacks_count = *)
+(*   Printf.printf "construct_ast: processing %d stacks\n%!" stacks_count *)
+(* ;; *)
 
-let debug_actions_found next_actions =
-  Printf.printf
-    "Total actions found: %d\n%!"
-    (List.fold_left ( + ) 0 (List.map List.length next_actions));
-  Printf.printf "Actions: ";
-  List.iteri
-    (fun i node_action_pairs ->
-       Printf.printf
-         "S%d:[%s] "
-         i
-         (String.concat
-            ","
-            (List.map
-               (fun (_, acts) -> string_of_int (List.length acts))
-               node_action_pairs)))
-    next_actions;
-  Printf.printf "\n%!"
-;;
+(* let debug_actions_found next_actions = *)
+(*   Printf.printf *)
+(*     "Total actions found: %d\n%!" *)
+(*     (List.fold_left ( + ) 0 (List.map List.length next_actions)); *)
+(*   Printf.printf "Actions: "; *)
+(*   List.iteri *)
+(*     (fun i node_action_pairs -> *)
+(*        Printf.printf *)
+(*          "S%d:[%s] " *)
+(*          i *)
+(*          (String.concat *)
+(*             "," *)
+(*             (List.map *)
+(*                (fun (_, acts) -> string_of_int (List.length acts)) *)
+(*                node_action_pairs))) *)
+(*     next_actions; *)
+(*   Printf.printf "\n%!" *)
+(* ;; *)
 
-let debug_blocked_check stacks =
-  Printf.printf "Checking if blocked... ";
-  List.iteri
-    (fun i stack -> Printf.printf "Stack%d:%d " i (NodeSet.cardinal stack.top))
-    stacks;
-  Printf.printf "\n%!"
-;;
+(* let debug_blocked_check stacks = *)
+(*   Printf.printf "Checking if blocked... "; *)
+(*   List.iteri *)
+(*     (fun i stack -> Printf.printf "Stack%d:%d " i (NodeSet.cardinal stack.top)) *)
+(*     stacks; *)
+(*   Printf.printf "\n%!" *)
+(* ;; *)
 
-let debug_actions_after_apply stacks =
-  Printf.printf "Actions after apply: ";
-  List.iteri
-    (fun i stack ->
-       let total_actions =
-         NodeSet.fold (fun node acc -> acc + List.length node.next_actions) stack.top 0
-       in
-       Printf.printf "S%d:%d " i total_actions)
-    stacks;
-  Printf.printf "\n%!"
-;;
+(* let debug_actions_after_apply stacks = *)
+(*   Printf.printf "Actions after apply: "; *)
+(*   List.iteri *)
+(*     (fun i stack -> *)
+(*        let total_actions = *)
+(*          NodeSet.fold (fun node acc -> acc + List.length node.next_actions) stack.top 0 *)
+(*        in *)
+(*        Printf.printf "S%d:%d " i total_actions) *)
+(*     stacks; *)
+(*   Printf.printf "\n%!" *)
+(* ;; *)

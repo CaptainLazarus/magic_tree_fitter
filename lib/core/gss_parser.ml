@@ -1,35 +1,35 @@
-open Gss_stack
-open Gss
-open Gss_actions
-open Gss_debug
+(* open Gss_stack *)
+(* open Gss *)
+(* open Gss_actions *)
+(* open Gss_debug *)
 
-let update_stack_with_actions stack node_action_pairs =
-  let updated_nodes =
-    List.map
-      (fun (node, actions) -> { node with next_actions = actions })
-      node_action_pairs
-  in
-  List.iter (fun node -> Hashtbl.replace stack.nodes node.id node) updated_nodes;
-  let updated_top = NodeSet.of_list updated_nodes in
-  { stack with top = updated_top }
-;;
+(* let update_stack_with_actions stack node_action_pairs = *)
+(*   let updated_nodes = *)
+(*     List.map *)
+(*       (fun (node, actions) -> { node with next_actions = actions }) *)
+(*       node_action_pairs *)
+(*   in *)
+(*   List.iter (fun node -> Hashtbl.replace stack.nodes node.id node) updated_nodes; *)
+(*   let updated_top = NodeSet.of_list updated_nodes in *)
+(*   { stack with top = updated_top } *)
+(* ;; *)
 
-let construct_ast (g : graph) =
-  let max_iter = 100 in
-  let rec aux iter g =
-    if iter >= max_iter
-    then (
-      Printf.printf "RECURSION LIMIT REACHED\n%!";
-      failwith "construct_ast: too many iterations");
-    debug_iteration_start (List.length g.stacks);
-    let new_stacks, next_actions = get_all_actions g in
-    (* debug_actions_found next_actions; *)
-    let updated_g = update_all_stacks_with_actions g new_stacks next_actions in
-    let final_g = apply_actions_to_all_stacks updated_g updated_g.stacks next_actions in
-    (* debug_blocked_check final_g.stacks; *)
-    (* Printf.printf "all_blocked check: %b\n%!" (all_blocked final_g.stacks); *)
-    (* debug_actions_after_apply final_g.stacks; *)
-    if all_blocked final_g.stacks then final_g else aux (iter + 1) final_g
-  in
-  aux 0 g
-;;
+(* let construct_ast (g : graph) = *)
+(*   let max_iter = 100 in *)
+(*   let rec aux iter g = *)
+(*     if iter >= max_iter *)
+(*     then ( *)
+(*       Printf.printf "RECURSION LIMIT REACHED\n%!"; *)
+(*       failwith "construct_ast: too many iterations"); *)
+(*     debug_iteration_start (List.length g.stacks); *)
+(*     let new_stacks, next_actions = get_all_actions g in *)
+(*     (\* debug_actions_found next_actions; *\) *)
+(*     let updated_g = update_all_stacks_with_actions g new_stacks next_actions in *)
+(*     let final_g = apply_actions_to_all_stacks updated_g updated_g.stacks next_actions in *)
+(*     (\* debug_blocked_check final_g.stacks; *\) *)
+(*     (\* Printf.printf "all_blocked check: %b\n%!" (all_blocked final_g.stacks); *\) *)
+(*     (\* debug_actions_after_apply final_g.stacks; *\) *)
+(*     if all_blocked final_g.stacks then final_g else aux (iter + 1) final_g *)
+(*   in *)
+(*   aux 0 g *)
+(* ;; *)
