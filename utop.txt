@@ -6,26 +6,18 @@ open Magic_tree_fitter.Parse_table_constructor;;
 open Magic_tree_fitter.Grammar_reader_utils;;
 open Magic_tree_fitter.Dump;;
 open Magic_tree_fitter.Gss;;
-open Magic_tree_fitter.Sppf;;
-open  Magic_tree_fitter.Gss_Parser;;
-open  Magic_tree_fitter.Gss_stack;;
-open  Magic_tree_fitter.Gss_debug;;
-open  Magic_tree_fitter.Gss_actions;;
- 
+open Magic_tree_fitter.Gss_parser;;
+open Magic_tree_fitter.Gss_debug;;
+open Magic_tree_fitter.Graph;;
+open Magic_tree_fitter.Stack;;
+open Magic_tree_fitter.Graph_monad_ops;;
+open Magic_tree_fitter.Stack_monad_ops;;
+open Magic_tree_fitter.Stack_ops;;
+open Magic_tree_fitter.Get_all_actions;;
+
 open Yojson.Basic.Util;;
+
 let parse_tables = "grammars/lisp.g4" |> extract_grammar |> create_parse_tables;;
-
-let token_info_list = get_tokens
-let selected_anchor = select_anchor token_info_list
-let reverse_tokens, forward_tokens = bisect_list selected_anchor token_info_list []
-
-let g : graph =
-    ({ stacks = []
-    ; parse_tables
-    ; anchor_symbol = selected_anchor
-    ; token_list = token_info_list
-    ; forward_tokens
-    ; reverse_tokens
-    }
-    |> initialise_stacks)
-
+let config, initial_graph = setup_glr parse_tables;;
+let c,g = run_glr initialise_stacks config initial_graph;;
+run_glr construct_ast () c g

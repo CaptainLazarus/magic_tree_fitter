@@ -13,7 +13,7 @@
 (*   let updated_top = NodeSet.of_list updated_nodes in *)
 (*   { stack with top = updated_top } *)
 (* ;; *)
-
+(**)
 (* let construct_ast (g : graph) = *)
 (*   let max_iter = 100 in *)
 (*   let rec aux iter g = *)
