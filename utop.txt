@@ -6,14 +6,11 @@ open Magic_tree_fitter.Parse_table_constructor;;
 open Magic_tree_fitter.Grammar_reader_utils;;
 open Magic_tree_fitter.Dump;;
 open Magic_tree_fitter.Gss;;
-open Magic_tree_fitter.Gss_parser;;
-open Magic_tree_fitter.Gss_debug;;
 open Magic_tree_fitter.Graph;;
 open Magic_tree_fitter.Stack;;
 open Magic_tree_fitter.Graph_monad_ops;;
 open Magic_tree_fitter.Stack_monad_ops;;
 open Magic_tree_fitter.Stack_ops;;
-open Magic_tree_fitter.Get_all_actions;;
 
 open Yojson.Basic.Util;;
 
@@ -21,3 +18,25 @@ let parse_tables = "grammars/lisp.g4" |> extract_grammar |> create_parse_tables;
 let config, initial_graph = setup_glr parse_tables;;
 let c,g = run_glr initialise_stacks config initial_graph;;
 run_glr construct_ast () c g
+
+
+let print_stack_top stack =
+  Printf.printf "\nStack.top (%d nodes):\n" (NodeMap.cardinal stack.top);
+  NodeMap.iter (fun _ node ->
+    Printf.printf "  Node[id=%d, state=%d]\n" node.id node.state;
+    Printf.printf "    edges: [%s]\n" 
+      (String.concat "; " 
+        (List.map (fun (token, target_state) -> 
+          Printf.sprintf "%s -> %d" (dump_token_info token) target_state) node.edges));
+    Printf.printf "    parents: {%s}\n" 
+      (String.concat ", " 
+        (List.map string_of_int (NodeIdSet.elements node.parents)));
+    Printf.printf "    next_actions: [%s]\n" 
+      (String.concat "; " 
+        (List.map string_of_action node.next_actions));
+    Printf.printf "    blocked_reductions: [%s]\n" 
+      (String.concat "; " 
+        (List.map (fun r -> Printf.sprintf "%s→%s" (string_of_symbol r.lhs) (string_of_production r.rhs)) node.blocked_reductions));
+    Printf.printf "\n"
+  ) stack.top;
+  Printf.printf "------\n%!"

@@ -2,11 +2,10 @@
  (name test_magic_tree_fitter)
  (libraries alcotest magic_tree_fitter)
  (deps
-  (glob_files %{project_root}/grammars/**)
+  (glob_files %{project_root}/grammars/**)))
 
-  ))
-  ;
-  ; (copy_files %{project_root}/grammars/*.g4)
+;
+; (copy_files %{project_root}/grammars/*.g4)
 ; (env
 ;  (dev
 ;   (flags (:standard -w -32))))

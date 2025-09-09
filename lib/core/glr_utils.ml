@@ -58,6 +58,18 @@ let get_forward_parse_table parse_tables = List.nth parse_tables 0
 let get_backward_parse_table parse_tables = List.nth parse_tables 1
 
 let find_opt predicate set =
-  let filtered = NodeSet.filter predicate set in
-  if NodeSet.is_empty filtered then None else Some (NodeSet.choose filtered)
+  let filtered = NodeMap.filter predicate set in
+  if NodeMap.is_empty filtered then None else Some (NodeMap.choose filtered)
+;;
+
+let get_next_actions_for_node (state : int) (sym : symbol) parse_table =
+  match Hashtbl.find_opt parse_table (state, sym) with
+  | None -> []
+  | Some s -> s
+;;
+
+let get_parse_table c s =
+  if s.direction = Forward
+  then get_forward_parse_table c.parse_tables
+  else get_backward_parse_table c.parse_tables
 ;;

@@ -31,18 +31,15 @@ type gss_node =
   ; blocked_reductions : production_rule list
   }
 
-module NodeSet = Set.Make (struct
-    type t = gss_node
+module NodeMap = Map.Make (struct
+    type t = node_state
 
-    let compare a b =
-      let c = compare a.state b.state in
-      if c = 0 then compare a.id b.id else c
-    ;;
+    let compare = Int.compare
   end)
 
 type stack =
   { root : gss_node
-  ; top : NodeSet.t
+  ; top : gss_node NodeMap.t
   ; next_token : token_info
   ; direction : direction_t
   ; nodes : (int, gss_node) Hashtbl.t
