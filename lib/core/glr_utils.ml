@@ -4,14 +4,15 @@ open Domain_types
 (* Maunally verified that the lisp grammar forward states are working. Check backward ? And then assume this works. Will have to fix with automated tests *)
 let initial_states_for_terminal
       (tables : (int * symbol, action list) Hashtbl.t list)
-      (sym : symbol)
-  : (int * int) list * (int * int) list
+      (sym : symbol) (* : (int * int) list * (int * int) list *)
   =
+  (* Extracting the initial shift states *)
   let extract_shift_states table =
     Hashtbl.fold
       (fun (state, symbol') actions acc ->
          match symbol', actions with
-         | s, [ Shift x ] when s = sym -> (state, x) :: acc
+         (* NOTE : If you have multiple actions and one of them is a shift, what then ? *)
+         | s, [ Shift x ] when s = sym -> (NodeState state, NodeState x) :: acc
          | _ -> acc)
       table
       []
@@ -28,9 +29,9 @@ let get_anchor_nodes parse_tables anchor =
   let create_anchor_node_from_list l =
     List.map
       (fun (x, y) ->
-         { id = 0
+         { id = NodeId 0
          ; state = x
-         ; edges = [ anchor, y ]
+         ; edges = EdgeSet.add (anchor.token, y) EdgeSet.empty
          ; parents = NodeIdSet.empty
          ; next_actions = []
          ; blocked_reductions = []
@@ -62,7 +63,7 @@ let find_opt predicate set =
   if NodeMap.is_empty filtered then None else Some (NodeMap.choose filtered)
 ;;
 
-let get_next_actions_for_node (state : int) (sym : symbol) parse_table =
+let get_next_actions_for_node (NodeState state : node_state) (sym : symbol) parse_table =
   match Hashtbl.find_opt parse_table (state, sym) with
   | None -> []
   | Some s -> s

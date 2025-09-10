@@ -23,23 +23,25 @@ let initialise_stack direction next_token node =
     }
   in
   (* add root node to hashtbl *)
-  Hashtbl.add s.nodes 0 node;
-  (* Top will be the edges. You're using a fold left for threading through the id counter *)
-  let top_list, final_id =
-    List.fold_left
-      (fun (top_acc, curr_id) (_, y) ->
+  Hashtbl.add s.nodes (NodeId 0) node;
+  (* Top will be the edges. You're using a fold for threading through the id counter *)
+  let top_list, NodeId final_id =
+    EdgeSet.fold
+      (fun el acc ->
+         let sym, y = el in
+         let top_acc, curr_id = acc in
          let n, new_id =
            create_and_add_node
              s
              ~state:y
-             ~edges:[]
+             ~edges:EdgeSet.empty
              ~parents:(NodeIdSet.singleton node.id)
              ~next_actions:[]
              ~blocked_reductions:[]
          in
-         (n.state, n) :: top_acc, new_id)
-      ([], 1)
+         (n.state, n) :: top_acc, increment_node_id curr_id)
       node.edges
+      ([], NodeId 1)
   in
   { s with top = NodeMap.of_list top_list; curr_id = final_id }
 ;;
@@ -78,10 +80,10 @@ let all_blocked (stacks : stack list) =
 
 let apply_action (c : glr_config) (s : stack) (top_node : gss_node) (a : action) : stack =
   match a with
-  | Shift x -> run_stack (apply_shift top_node x) s |> fst
-  | Reduce pr -> apply_reduce c s top_node pr
+  | Shift x -> run_stack (apply_shift top_node (NodeState x)) s |> fst
+  | Reduce pr -> run_stack (apply_reduce c top_node pr) s |> fst
   | Accept -> failwith "[2XX] Program finished ?"
-  | Goto x -> apply_goto s top_node x
+  | Goto x -> run_stack (apply_goto top_node (NodeState x)) s |> fst
 ;;
 
 let apply_node_actions (c : glr_config) (curr_stack : stack) top_node =

@@ -1,7 +1,9 @@
 open Domain_types
 
-type node_state = int
-type node_id = int
+type node_state = NodeState of int
+type node_id = NodeId of int
+
+let increment_node_id (NodeId x) = NodeId (x + 1)
 
 type direction_t =
   | Forward
@@ -19,14 +21,26 @@ module NodeStateSet = Set.Make (struct
     let compare = compare
   end)
 
+let node_state_compare (NodeState i1) (NodeState i2) = Int.compare i1 i2
+
+module EdgeSet = Set.Make (struct
+    type t = symbol * node_state
+
+    let compare (t1, s1) (t2, s2) =
+      let c = symbol_compare t1 t2 in
+      if c = 0 then node_state_compare s1 s2 else c
+    ;;
+  end)
+
 type gss_node =
   { id : node_id
   ; state : node_state
-  ; edges : (token_info * node_state) list
+  ; edges : EdgeSet.t
   ; parents : NodeIdSet.t
     (*node_id*)
     (* ; children : int list *)
     (* Basically `List.map (fun (sym, s) -> s) edges` since edges leading out lead to children *)
+    (* Update : This is incorrect. The edge is holding node_state. Need to do a manual lookup for which children have that state. Since if same state, the nodes get merged, especially wit hthe same parents *)
   ; next_actions : action list
   ; blocked_reductions : production_rule list
   }
@@ -34,7 +48,7 @@ type gss_node =
 module NodeMap = Map.Make (struct
     type t = node_state
 
-    let compare = Int.compare
+    let compare = node_state_compare
   end)
 
 type stack =
@@ -42,7 +56,7 @@ type stack =
   ; top : gss_node NodeMap.t
   ; next_token : token_info
   ; direction : direction_t
-  ; nodes : (int, gss_node) Hashtbl.t
+  ; nodes : (node_id, gss_node) Hashtbl.t
   ; curr_id : int
   }
 
@@ -55,18 +69,25 @@ let create_node
       ~blocked_reductions
   : gss_node * node_id
   =
+  let (NodeId x) = current_id in
   let node =
     { id = current_id; state; parents; edges; next_actions; blocked_reductions }
   in
-  node, current_id + 1
+  node, NodeId (x + 1)
 ;;
 
 let create_and_add_node s ~state ~parents ~edges ~next_actions ~blocked_reductions =
-  let new_node, next_id =
-    create_node s.curr_id ~state ~parents ~edges ~next_actions ~blocked_reductions
+  let new_node, NodeId next_id =
+    create_node
+      (NodeId s.curr_id)
+      ~state
+      ~parents
+      ~edges
+      ~next_actions
+      ~blocked_reductions
   in
   Hashtbl.add s.nodes new_node.id new_node;
-  new_node, next_id
+  new_node, NodeId next_id
 ;;
 
 type glr_config =

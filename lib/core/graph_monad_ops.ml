@@ -51,6 +51,8 @@ let rec construct_ast () =
     >>= fun (c : glr_config) ->
     get
     >>= fun (g : graph) ->
+    (* let curr_forward_token = List.hd g.forward_tokens in *)
+    (* let curr_backward_token = List.hd g.reverse_tokens in *)
     let updated_stacks =
       List.map (update_stack c) g.stacks
       |> List.filter (fun s -> not (NodeMap.is_empty s.top))
