@@ -86,10 +86,23 @@ let apply_action (c : glr_config) (s : stack) (top_node : gss_node) (a : action)
   | Goto x -> run_stack (apply_goto top_node (NodeState x)) s |> fst
 ;;
 
+(* let apply_node_actions (c : glr_config) (curr_stack : stack) top_node = *)
+(*   (* we got the top_node. We have the stack. Now we have to List.map over options ? List.fold. We need to update and return the stack, basically.*) *)
+(*   (* Individual ops can be a monad since stack is updated. stack -> stack *) *)
+(*   List.fold_left (fun s a -> apply_action c s top_node a) curr_stack top_node.next_actions *)
+(* ;; *)
+(**)
 let apply_node_actions (c : glr_config) (curr_stack : stack) top_node =
-  (* we got the top_node. We have the stack. Now we have to List.map over options ? List.fold. We need to update and return the stack, basically.*)
-  (* Individual ops can be a monad since stack is updated. stack -> stack *)
-  List.fold_left (fun s a -> apply_action c s top_node a) curr_stack top_node.next_actions
+  let updated_stack =
+    List.fold_left
+      (fun s a -> apply_action c s top_node a)
+      curr_stack
+      top_node.next_actions
+  in
+  (* Clear the next_actions after processing *)
+  let cleared_node = { top_node with next_actions = [] } in
+  Hashtbl.replace updated_stack.nodes top_node.id cleared_node;
+  { updated_stack with top = NodeMap.add top_node.state cleared_node updated_stack.top }
 ;;
 
 let apply_actions_to_stack (c : glr_config) =

@@ -1,4 +1,5 @@
 open Domain_types
+open Gss
 
 let dump_single x =
   print_string ("\n" ^ fst x);
@@ -160,4 +161,24 @@ let dump_parse_table_to_file
 
 let dump_token_info { token; lexeme } =
   Printf.sprintf "{ token = %s; lexeme = \"%s\" }" (string_of_symbol token) lexeme
+;;
+
+let dump_edgeset edges =
+  let edge_strings =
+    EdgeSet.elements edges
+    |> List.map (fun (symbol, target_state) ->
+      let (NodeState state_val) = target_state in
+      Printf.sprintf "%s -> %d" (string_of_symbol symbol) state_val)
+  in
+  Printf.sprintf "[%s]" (String.concat "; " edge_strings)
+;;
+
+let dump_edgeset_verbose edges =
+  Printf.printf "EdgeSet (%d edges):\n" (EdgeSet.cardinal edges);
+  EdgeSet.iter
+    (fun (symbol, target_state) ->
+       let (NodeState state_val) = target_state in
+       Printf.printf "  %s -> state %d\n" (string_of_symbol symbol) state_val)
+    edges;
+  Printf.printf "\n%!"
 ;;
