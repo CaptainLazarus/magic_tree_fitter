@@ -182,3 +182,84 @@ let dump_edgeset_verbose edges =
     edges;
   Printf.printf "\n%!"
 ;;
+
+let dump_nodes stack =
+  Printf.printf "\nAll nodes in stack (%d total):\n" (HashtblCustom.length stack.nodes);
+  HashtblCustom.iter
+    (fun node_id node ->
+       let (NodeId id_val) = node_id in
+       let (NodeId actual_id) = node.id in
+       let (NodeState state_val) = node.state in
+       Printf.printf "  Node[key=%d, id=%d, state=%d]\n" id_val actual_id state_val;
+       Printf.printf "    edges: %s\n" (dump_edgeset node.edges);
+       Printf.printf
+         "    parents: {%s}\n"
+         (String.concat
+            ", "
+            (List.map
+               (fun parent_id ->
+                  let (NodeId pid) = parent_id in
+                  string_of_int pid)
+               (NodeIdSet.elements node.parents)));
+       Printf.printf
+         "    next_actions: [%s]\n"
+         (String.concat "; " (List.map string_of_action node.next_actions));
+       Printf.printf
+         "    blocked_reductions: [%s]\n"
+         (String.concat
+            "; "
+            (List.map
+               (fun r ->
+                  Printf.sprintf
+                    "%s→%s"
+                    (string_of_symbol r.lhs)
+                    (string_of_production r.rhs))
+               node.blocked_reductions));
+       Printf.printf "\n")
+    stack.nodes;
+  Printf.printf "------\n%!"
+;;
+
+let print_stack_top stack =
+  Printf.printf "\nStack.top (%d nodes):\n" (NodeMap.cardinal stack.top);
+  NodeMap.iter
+    (fun _ node ->
+       let (NodeId node_id) = node.id in
+       let (NodeState node_state) = node.state in
+       Printf.printf "  Node[id=%d, state=%d]\n" node_id node_state;
+       Printf.printf
+         "    edges: [%s]\n"
+         (String.concat
+            "; "
+            (List.map
+               (fun (symbol, target_state) ->
+                  let (NodeState state_val) = target_state in
+                  Printf.sprintf "%s -> %d" (string_of_symbol symbol) state_val)
+               (EdgeSet.elements node.edges)));
+       Printf.printf
+         "    parents: {%s}\n"
+         (String.concat
+            ", "
+            (List.map
+               (fun parent_id ->
+                  let (NodeId id_val) = parent_id in
+                  string_of_int id_val)
+               (NodeIdSet.elements node.parents)));
+       Printf.printf
+         "    next_actions: [%s]\n"
+         (String.concat "; " (List.map string_of_action node.next_actions));
+       Printf.printf
+         "    blocked_reductions: [%s]\n"
+         (String.concat
+            "; "
+            (List.map
+               (fun r ->
+                  Printf.sprintf
+                    "%s→%s"
+                    (string_of_symbol r.lhs)
+                    (string_of_production r.rhs))
+               node.blocked_reductions));
+       Printf.printf "\n")
+    stack.top;
+  Printf.printf "------\n%!"
+;;

@@ -11,6 +11,7 @@ open Magic_tree_fitter.Stack;;
 open Magic_tree_fitter.Graph_monad_ops;;
 open Magic_tree_fitter.Stack_monad_ops;;
 open Magic_tree_fitter.Stack_ops;;
+open Magic_tree_fitter.Glr_utils;;
 
 open Yojson.Basic.Util;;
 
@@ -18,41 +19,73 @@ let parse_tables = "grammars/lisp.g4" |> extract_grammar |> create_parse_tables;
 let config, initial_graph = setup_glr parse_tables;;
 let c,g = run_glr initialise_stacks config initial_graph;;
 
+g.stacks |> List.length;;
+let s1 = List.nth g.stacks 0;;
+dump_nodes s1;;
+print_stack_top s1;;
 
-let print_stack_top stack =
-  Printf.printf "\nStack.top (%d nodes):\n" (NodeMap.cardinal stack.top);
-  NodeMap.iter (fun _ node ->
-    let (NodeId node_id) = node.id in
-    let (NodeState node_state) = node.state in
-    Printf.printf "  Node[id=%d, state=%d]\n" node_id node_state;
-    Printf.printf "    edges: [%s]\n" 
-      (String.concat "; " 
-        (List.map (fun (symbol, target_state) -> 
-          let (NodeState state_val) = target_state in
-          Printf.sprintf "%s -> %d" (string_of_symbol symbol) state_val) (EdgeSet.elements node.edges)));
-    Printf.printf "    parents: {%s}\n" 
-      (String.concat ", " 
-        (List.map (fun parent_id -> 
-          let (NodeId id_val) = parent_id in 
-          string_of_int id_val) (NodeIdSet.elements node.parents)));
-    Printf.printf "    next_actions: [%s]\n" 
-      (String.concat "; " 
-        (List.map string_of_action node.next_actions));
-    Printf.printf "    blocked_reductions: [%s]\n" 
-      (String.concat "; " 
-        (List.map (fun r -> Printf.sprintf "%s→%s" (string_of_symbol r.lhs) (string_of_production r.rhs)) node.blocked_reductions));
-    Printf.printf "\n"
-  ) stack.top;
-  Printf.printf "------\n%!"
-
-(*
-
-    let updated_stacks =
-      List.map (update_stack c) g.stacks
+   let updated_stacks =
+      List.map
+        (fun s ->
+           let s', _ = Stack.(run_stack (apply_actions_to_stack c) s) in
+           Printf.printf "After apply_actions_to_stack:\n";
+           print_stack_top s';
+           s')
+        g.stacks
+      |> (fun sl ->
+      if g.forward_tokens = [] || g.reverse_tokens = []
+      then sl
+      else (
+        let curr_forward_token = List.hd g.forward_tokens in
+        let curr_backward_token = List.hd g.reverse_tokens in
+        List.map
+          (fun s ->
+             { s with
+               next_token =
+                 (if s.direction = Forward
+                  then curr_forward_token
+                  else curr_backward_token)
+             })
+          sl))
+      |> List.map (update_stack_with_actions c)
       |> List.filter (fun s -> not (NodeMap.is_empty s.top))
-*)
-let final_graph = run_glr construct_ast () c g |> fst
 
-final_graph.stacks |> fun s -> List.nth s 0 ;;
-final_graph.stacks |> fun s -> List.nth s 0 |> print_stack_top ;;
-final_graph.stacks |> fun s -> List.nth s 0 |> fun s -> dump_edgeset_verbose s.root.edges;;
+
+updated_stacks |> List.length;;
+let s' = List.nth updated_stacks 0;;
+dump_nodes s';;
+print_stack_top s';;
+
+
+    let g' =
+      { g with
+        stacks =
+          List.map
+            (fun s ->
+               { s with
+                 next_token =
+                   (if s.direction = Forward
+                    then curr_forward_token
+                    else curr_backward_token)
+               })
+            updated_stacks
+      };;
+
+
+g'.stacks |> List.length;;
+let s2 = List.nth g'.stacks 0;;
+dump_nodes s2;;
+print_stack_top s2;;
+
+
+    let g' =
+      { g with
+        forward_tokens = List.tl g.forward_tokens
+      ; reverse_tokens = List.tl g.reverse_tokens
+      }
+
+
+updated_stacks_2 |> List.length;;
+let s'' = List.nth updated_stacks_2 0;;
+dump_nodes s'';;
+print_stack_top s'';;

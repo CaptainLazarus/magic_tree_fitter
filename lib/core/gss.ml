@@ -51,12 +51,23 @@ module NodeMap = Map.Make (struct
     let compare = node_state_compare
   end)
 
+let node_id_compare_bool (NodeId id1) (NodeId id2) =
+  if Int.compare id1 id2 = 0 then true else false
+;;
+
+module HashtblCustom = Hashtbl.Make (struct
+    type t = node_id
+
+    let equal = node_id_compare_bool
+    let hash (NodeId i) = i
+  end)
+
 type stack =
   { root : gss_node
   ; top : gss_node NodeMap.t
   ; next_token : token_info
   ; direction : direction_t
-  ; nodes : (node_id, gss_node) Hashtbl.t
+  ; nodes : gss_node HashtblCustom.t
   ; curr_id : int
   }
 
@@ -86,7 +97,7 @@ let create_and_add_node s ~state ~parents ~edges ~next_actions ~blocked_reductio
       ~next_actions
       ~blocked_reductions
   in
-  Hashtbl.add s.nodes new_node.id new_node;
+  HashtblCustom.add s.nodes new_node.id new_node;
   new_node, NodeId next_id
 ;;
 
