@@ -1,6 +1,37 @@
 open Gss
 open Glr_utils
 open Domain_types
+open Dump
+
+let partition_actions acts =
+  let rs, other =
+    List.partition
+      (function
+        | Reduce _ -> true
+        | _ -> false)
+      acts
+  in
+  rs @ other
+;;
+
+(* let rec drain_reduces c node = *)
+(*   Stack.( *)
+(*     get *)
+(*     >>= fun s -> *)
+(*     let acts = *)
+(*       partition_actions *)
+(*         (get_next_actions_for_node node.state s.next_token.token (get_parse_table c s)) *)
+(*     in *)
+(*     match acts with *)
+(*     | Reduce pr :: _ -> *)
+(*       apply_reduce c node pr *)
+(*       >>= fun () -> *)
+(*       get *)
+(*       >>= fun s' -> *)
+(*       let node' = NodeMap.find node.state s'.top in *)
+(*       drain_reduces c node' *)
+(*     | _ -> return node) *)
+(* ;; *)
 
 let find_actions_for_top_nodes parse_table =
   Stack.(
@@ -12,6 +43,7 @@ let find_actions_for_top_nodes parse_table =
         (fun top_node ->
            let next_actions =
              get_next_actions_for_node top_node.state s.next_token.token parse_table
+             |> partition_actions
            in
            let updated_node = { top_node with next_actions } in
            HashtblCustom.replace s.nodes top_node.id updated_node;
@@ -120,11 +152,18 @@ let find_matching_edge
       (child : gss_node)
       (expected_sym : symbol)
   =
-  let child_node = HashtblCustom.find s.nodes child.id in
-  EdgeSet.find_opt
-    (expected_sym, child_node.state)
-    (* Can't have multiple edges since the children are unique*)
-    parent.edges
+  let child_node_opt = HashtblCustom.find_opt s.nodes child.id in
+  match child_node_opt with
+  | None ->
+    dump_stack s;
+    (* dump_nodes s; *)
+    (* print_stack_top s; *)
+    failwith "Node not found"
+  | Some child_node ->
+    EdgeSet.find_opt
+      (expected_sym, child_node.state)
+      (* Can't have multiple edges since the children are unique*)
+      parent.edges
 ;;
 
 let collect_reduction_paths (s : stack) (top_node : gss_node) (pr : production_rule) =

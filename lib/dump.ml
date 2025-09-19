@@ -263,3 +263,101 @@ let print_stack_top stack =
     stack.top;
   Printf.printf "------\n%!"
 ;;
+
+(* ------------------------------------------------------------------ *)
+(* pretty-print one gss_node                                          *)
+(* ------------------------------------------------------------------ *)
+let dump_gss_node (n : gss_node) : unit =
+  let (NodeId id_val) = n.id in
+  let (NodeState st_val) = n.state in
+  Printf.printf "Node[id=%d, state=%d]\n" id_val st_val;
+  (* edges *)
+  let es =
+    EdgeSet.fold
+      (fun (sym, NodeState s) acc ->
+         let sym_str =
+           match sym with
+           | Terminal t -> "\"" ^ t ^ "\""
+           | NonTerminal nt -> nt
+           | Epsilon -> "ε"
+           | EOF -> "$"
+         in
+         Printf.sprintf "%s -> %d" sym_str s :: acc)
+      n.edges
+      []
+    |> String.concat "; "
+  in
+  Printf.printf "  edges: [%s]\n" es;
+  (* parents *)
+  let ps =
+    NodeIdSet.fold (fun (NodeId p) acc -> string_of_int p :: acc) n.parents []
+    |> String.concat ", "
+  in
+  Printf.printf "  parents: {%s}\n" ps;
+  (* next_actions *)
+  let acts =
+    List.map
+      (function
+        | Shift s -> Printf.sprintf "S%d" s
+        | Reduce pr ->
+          let lhs =
+            match pr.lhs with
+            | Terminal t -> t
+            | NonTerminal nt -> nt
+            | _ -> "?"
+          in
+          Printf.sprintf "R(%s→...)" lhs
+        | Accept -> "Acc"
+        | Goto s -> Printf.sprintf "G%d" s)
+      n.next_actions
+    |> String.concat "; "
+  in
+  Printf.printf "  next_actions: [%s]\n" acts;
+  (* blocked reductions *)
+  let blocked =
+    List.map
+      (fun pr ->
+         let lhs =
+           match pr.lhs with
+           | Terminal t -> t
+           | NonTerminal nt -> nt
+           | _ -> "?"
+         in
+         Printf.sprintf "%s→..." lhs)
+      n.blocked_reductions
+    |> String.concat "; "
+  in
+  Printf.printf "  blocked_reductions: [%s]\n" blocked;
+  print_endline ""
+;;
+
+(* ------------------------------------------------------------------ *)
+(* dump a single stack                                                *)
+(* ------------------------------------------------------------------ *)
+let dump_stack (s : stack) : unit =
+  Printf.printf
+    "=== STACK %s ===\n"
+    (match s.direction with
+     | Forward -> "Forward"
+     | Backward -> "Backward");
+  Printf.printf "curr_id = %d\n" s.curr_id;
+  Printf.printf
+    "next_token = %s\n"
+    (match s.next_token.token with
+     | Terminal t -> "\"" ^ t ^ "\""
+     | NonTerminal nt -> nt
+     | Epsilon -> "ε"
+     | EOF -> "$");
+  Printf.printf "root: ";
+  dump_gss_node s.root;
+  Printf.printf "TOP nodes (%d total):\n" (NodeMap.cardinal s.top);
+  NodeMap.iter (fun _ node -> dump_gss_node node) s.top;
+  Printf.printf "ALL nodes in hashtbl (%d total):\n" (HashtblCustom.length s.nodes);
+  HashtblCustom.iter (fun _ node -> dump_gss_node node) s.nodes;
+  print_endline "------"
+;;
+
+(* ------------------------------------------------------------------ *)
+(* dump every stack in a graph                                        *)
+(* ------------------------------------------------------------------ *)
+let dump_stacks (g : graph) : unit = List.iter dump_stack g.stacks

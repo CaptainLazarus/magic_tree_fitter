@@ -140,6 +140,16 @@ let apply_node_actions (c : glr_config) (curr_stack : stack) top_node =
   update_top_node top_node updated_stack
 ;;
 
+(* let apply_node_actions c s top_node = *)
+(*   List.fold_left *)
+(*     (fun (s, shifted) a -> *)
+(*        match a with *)
+(*        | Shift _ -> apply_action c s top_node a, true *)
+(*        | _ -> apply_action c s top_node a, shifted) *)
+(*     (s, false) *)
+(*     (partition_actions top_node.next_actions) *)
+(* ;; *)
+(**)
 (* This should now be inside the specific actions *)
 (* Clear the next_actions after processing *)
 (* let cleared_node = { top_node with next_actions = [] } in *)
