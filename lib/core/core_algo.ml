@@ -3,7 +3,6 @@ open Grammar_reader
 open Yojson.Basic.Util
 open Graph
 open Graph_monad_ops
-(* open Gss_parser *)
 
 (* (\* open Dump *\) *)
 open Gss
@@ -23,14 +22,8 @@ let run_java_and_read_output () =
   in
   let output = read_all [] in
   close_in ic;
-  (* print_string "\n\nStart\n\n"; *)
   output
 ;;
-
-(* let dump_token_list (tokens : Yojson.Basic.t list) : Yojson.Basic.t list = *)
-(*   tokens |> List.map Yojson.Basic.to_string |> String.concat "\n" |> print_string; *)
-(*   tokens *)
-(* ;; *)
 
 let token_info_of_json (x : Yojson.Basic.t) : token_info =
   let open Yojson.Basic.Util in
@@ -100,7 +93,7 @@ let select_anchor token_info_list =
   | Some t -> t
 ;;
 
-(* (\* file -> JSON -> get X -> run GLR from parse tables ->  *\) *)
+(* file -> JSON -> get X -> run GLR from parse tables ->  *)
 let setup_glr parse_tables =
   let token_info_list = get_tokens in
   let selected_anchor = select_anchor token_info_list in

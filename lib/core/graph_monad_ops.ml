@@ -70,30 +70,20 @@ let rec construct_ast () =
     let updated_stacks =
       List.map
         (fun s ->
-           let s', _ = Stack.(run_stack (apply_actions_to_stack c) s) in
-           (* Printf.printf "After apply_actions_to_stack:\n"; *)
-           (* dump_nodes s'; *)
-           (* print_stack_top s'; *)
+           let s', _ = Stack.(run_stack (consume_token c) s) in
            s')
         g.stacks
-      (* |> (fun sl -> *)
-      (* if g.forward_tokens = [] || g.reverse_tokens = [] *)
-      (* then sl *)
-      (* else ( *)
-      (*   let curr_forward_token = List.hd g.forward_tokens in *)
-      (*   let curr_backward_token = List.hd g.reverse_tokens in *)
-      (*   List.map *)
-      (*     (fun s -> *)
-      (*        { s with *)
-      (*          next_token = *)
-      (*            (if s.direction = Forward *)
-      (*             then curr_forward_token *)
-      (*             else curr_backward_token) *)
-      (*        }) *)
-      (*     sl)) *)
       |> List.map (update_stack_with_actions c)
       |> List.filter (fun s -> not (NodeMap.is_empty s.top))
     in
+    (*
+       So...couple of things here.
+    1. If there's a blocked reduction, then don't advance the token ?
+    2. If no shifts occured, then all blocked (using the new definition of reduce -> recursive reduce till something else). In which case, no point of advancement.
+    3. If a single shift occurs, dump the other stacks ? Depends. If they're blocked, then advance only that stack. advance global token otherwise. That reduce func needs to be checked.
+    
+    All of this is really stupid. either the stack consumed the input, which is the default assumption, or it has a blocked reduction. There's literally no in-between. So just check for a blocked reduction. What am I missing.
+    *)
     let g' =
       { stacks = updated_stacks
       ; forward_tokens = List.tl g.forward_tokens

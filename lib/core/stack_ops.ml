@@ -1,5 +1,4 @@
 open Gss
-open Stack
 open Domain_types
 open Stack_monad_ops
 
@@ -62,43 +61,6 @@ let all_blocked (stacks : stack list) =
     stacks
 ;;
 
-(* NOTE : Simple Routing func. Not bad *)
-let apply_action (c : glr_config) (s : stack) (top_node : gss_node) (a : action) : stack =
-  match a with
-  | Shift x -> run_stack (apply_shift top_node (NodeState x)) s |> fst
-  | Reduce pr -> run_stack (apply_reduce c top_node pr) s |> fst
-  | Accept -> failwith "[2XX] Program finished ?"
-  | Goto x -> failwith "[3XX] GOTO should never be a node action - this is a bug"
-;;
-
-(* | Goto x -> run_stack (apply_goto top_node (NodeState x)) s |> fst *)
-
-(* let apply_node_actions (c : glr_config) (curr_stack : stack) top_node = *)
-(*   (* we got the top_node. We have the stack. Now we have to List.map over options ? List.fold. We need to update and return the stack, basically.*) *)
-(*   (* Individual ops can be a monad since stack is updated. stack -> stack *) *)
-(*   List.fold_left (fun s a -> apply_action c s top_node a) curr_stack top_node.next_actions *)
-(* ;; *)
-
-let update_top_node (top_node : gss_node) (s : stack) =
-  let new_top_node = NodeMap.find top_node.state s.top in
-  if NodeIdSet.is_empty new_top_node.parents
-  then (
-    HashtblCustom.remove s.nodes top_node.id;
-    { s with top = NodeMap.remove top_node.state s.top })
-  else (
-    let diff_a = NodeIdSet.diff new_top_node.parents top_node.parents in
-    let diff_b = NodeIdSet.diff top_node.parents new_top_node.parents in
-    match NodeIdSet.is_empty diff_a, NodeIdSet.is_empty diff_b with
-    (* True a -> no new parents -> no top node got this ; True b -> no parents removed -> no reductions *)
-    | true, true ->
-      let updated_top = NodeMap.remove top_node.state s.top in
-      { s with top = updated_top }
-    | true, false ->
-      HashtblCustom.remove s.nodes top_node.id;
-      s
-    | false, _ -> s)
-;;
-
 (* Apply the specific action. GOTO and shift are the same. Reduce leads to a goto and then ends. *)
 (* After all the actions are done, remove the top node ? Only if not in nodes table *)
 
@@ -130,46 +92,18 @@ let update_top_node (top_node : gss_node) (s : stack) =
 
 (* fml. so, either a. remove / keep in hashtbl b. remove / keep in top. You can also filter if no parents *)
 
-let apply_node_actions (c : glr_config) (curr_stack : stack) top_node =
-  let updated_stack =
-    List.fold_left
-      (fun s a -> apply_action c s top_node a)
-      curr_stack
-      top_node.next_actions
-  in
-  update_top_node top_node updated_stack
-;;
-
-(* let apply_node_actions c s top_node = *)
-(*   List.fold_left *)
-(*     (fun (s, shifted) a -> *)
-(*        match a with *)
-(*        | Shift _ -> apply_action c s top_node a, true *)
-(*        | _ -> apply_action c s top_node a, shifted) *)
-(*     (s, false) *)
-(*     (partition_actions top_node.next_actions) *)
+(* let apply_top_node_actions (c : glr_config) (curr_stack : stack) top_node = *)
+(*   let updated_stack = *)
+(*     List.fold_left *)
+(*       (fun s a -> apply_action c s top_node a) *)
+(*       curr_stack *)
+(*       top_node.next_actions *)
+(*   in *)
+(*   update_top_node top_node updated_stack *)
 (* ;; *)
-(**)
-(* This should now be inside the specific actions *)
-(* Clear the next_actions after processing *)
-(* let cleared_node = { top_node with next_actions = [] } in *)
-(* Hashtbl.replace updated_stack.nodes top_node.id cleared_node; *)
-(* { updated_stack with top = NodeMap.add top_node.state cleared_node updated_stack.top } *)
 
 (* 1. Take each top node *)
 (* 2. Apply all actions in that specific top node *)
 (* 3. Remove the nodes that aren't in the nodes anymore --> If nodes not in the hashtbl. This runs at the end after all the actions are applied. *)
-let apply_actions_to_stack (c : glr_config) =
-  Stack.(
-    get
-    >>= fun s ->
-    let updated_stack =
-      NodeMap.fold (fun _ top_node s -> apply_node_actions c s top_node) s.top s
-    in
-    let cleaned_top =
-      NodeMap.filter
-        (fun state node -> HashtblCustom.mem updated_stack.nodes node.id)
-        updated_stack.top
-    in
-    put { updated_stack with top = cleaned_top } >>= fun _ -> get)
-;;
+
+let consume_token = apply_actions_to_stack

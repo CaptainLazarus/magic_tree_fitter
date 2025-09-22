@@ -14,40 +14,24 @@ let partition_actions acts =
   rs @ other
 ;;
 
-(* let rec drain_reduces c node = *)
-(*   Stack.( *)
-(*     get *)
-(*     >>= fun s -> *)
-(*     let acts = *)
-(*       partition_actions *)
-(*         (get_next_actions_for_node node.state s.next_token.token (get_parse_table c s)) *)
-(*     in *)
-(*     match acts with *)
-(*     | Reduce pr :: _ -> *)
-(*       apply_reduce c node pr *)
-(*       >>= fun () -> *)
-(*       get *)
-(*       >>= fun s' -> *)
-(*       let node' = NodeMap.find node.state s'.top in *)
-(*       drain_reduces c node' *)
-(*     | _ -> return node) *)
-(* ;; *)
+let update_actions_for_top_node (top_node : gss_node) parse_table (s : stack) =
+  let next_actions =
+    get_next_actions_for_node top_node.state s.next_token.token parse_table
+    |> partition_actions
+  in
+  let updated_node = { top_node with next_actions } in
+  HashtblCustom.replace s.nodes top_node.id updated_node;
+  updated_node
+;;
 
-let find_actions_for_top_nodes parse_table =
+let update_actions_for_top_nodes parse_table =
   Stack.(
     get
     >>= fun s ->
     (* Update top nodes with next_actions per stack, and filter the nodes with empty actions. *)
     let updated_top =
       NodeMap.map
-        (fun top_node ->
-           let next_actions =
-             get_next_actions_for_node top_node.state s.next_token.token parse_table
-             |> partition_actions
-           in
-           let updated_node = { top_node with next_actions } in
-           HashtblCustom.replace s.nodes top_node.id updated_node;
-           updated_node)
+        (fun top_node -> update_actions_for_top_node top_node parse_table s)
         s.top
       |> NodeMap.filter (fun _ top_node -> top_node.next_actions <> [])
     in
@@ -59,7 +43,7 @@ let update_stack_with_actions_monad (c : glr_config) =
     get
     >>= fun s ->
     let parse_table = get_parse_table c s in
-    find_actions_for_top_nodes parse_table)
+    update_actions_for_top_nodes parse_table)
 ;;
 
 (* ------------------------------------------ *)
@@ -111,7 +95,7 @@ let add_parent_edge parent_node transition_symbol child_node =
       }
     in
     HashtblCustom.replace s.nodes parent_node.id updated_parent;
-    put { s with top = NodeMap.add child_node.state child_node s.top } >>= fun _ -> get)
+    return { s with top = NodeMap.add child_node.state child_node s.top })
 ;;
 
 (* 1. Find / Create a node *)
@@ -131,19 +115,15 @@ let apply_shift (top_node : gss_node) (x : node_state) =
     get
     >>= fun s ->
     find_or_create_shifted_node x top_node.id
-    >>= fun child_node ->
-    add_parent_edge top_node s.next_token.token child_node >>= fun updated_stack -> get)
+    >>= fun child_node -> add_parent_edge top_node s.next_token.token child_node)
 ;;
-
-(* let apply_goto (top_node : gss_node) (x : node_state) = apply_shift top_node x *)
 
 let apply_goto (top_node : gss_node) (transition_symbol : symbol) (x : node_state) =
   Stack.(
     get
     >>= fun s ->
     find_or_create_shifted_node x top_node.id
-    >>= fun child_node ->
-    add_parent_edge top_node transition_symbol child_node >>= fun updated_stack -> get)
+    >>= fun child_node -> add_parent_edge top_node transition_symbol child_node)
 ;;
 
 let find_matching_edge
@@ -267,22 +247,28 @@ let apply_path_reduction (c : glr_config) (top_node : gss_node) (path : gss_node
          put s'
          >>= fun _ ->
          apply_goto parent pr.lhs (NodeState target_state)
-         >>= fun final_stack -> put final_stack >>= fun _ -> get
+         >>= fun final_stack -> return final_stack
        | _ -> return s))
 ;;
 
-let apply_paths_reduction
-      (c : glr_config)
-      (top_node : gss_node)
-      (paths : gss_node list list)
-      pr
+let rec apply_paths_reduction
+          (c : glr_config)
+          (top_node : gss_node)
+          (paths : gss_node list list)
+          pr
   =
   Stack.(
     get
     >>= fun s ->
     match paths with
     | [] -> return s
-    | path :: rest -> apply_path_reduction c top_node path pr >>= fun s' -> return s')
+    | path :: rest ->
+      apply_path_reduction c top_node path pr
+      >>= fun updated_stack ->
+      put updated_stack
+      >>= fun _ ->
+      apply_paths_reduction c top_node rest pr
+      >>= fun final_stack -> put final_stack >>= fun _ -> get)
 ;;
 
 (* TODO : So, read comments on apply shift. Mainly have to a. Update parents on reduction (remove dead parents). This will be needed for comparision later higher above for current graph.*)
@@ -291,11 +277,94 @@ let apply_reduce (c : glr_config) (top_node : gss_node) (pr : production_rule) =
     get
     >>= fun s ->
     let paths = collect_reduction_paths s top_node pr in
-    apply_paths_reduction c top_node paths pr >>= fun s -> return s)
+    apply_paths_reduction c top_node paths pr
+    >>= fun updated_stack -> put updated_stack >>= fun _ -> get)
 ;;
-(* Top list should be filtered every time, though I guess we can do this later. *)
-(* The idea here is checking if a path is possible is enough, since then the path itself will be reduced to the symbol *)
-(* If the path is possible, all we need to do is find the goto state of the NonTerminal, and then add that to top nodes *)
-(* We should also remove the child from the parent, so that further operations don't use this child, since it is now reduced. Or should it not be removed ? *)
-(* Child likely has to be removed. It's a pop operation, though we're not treating it as such. It should not be available. Lots of questions. *)
-(* Not putting the questions here. If I rediscover them, then sure. Keywords : Multiple reduce *)
+
+(* NOTE : Simple Routing func. Not bad *)
+let apply_action (c : glr_config) (top_node : gss_node) (a : action) =
+  Stack.(
+    get
+    >>= fun s ->
+    match a with
+    | Shift x ->
+      apply_shift top_node (NodeState x) >>= fun updated_stack -> return updated_stack
+    | Reduce pr ->
+      apply_reduce c top_node pr >>= fun updated_stack -> return updated_stack
+    | Accept -> failwith "[2XX] Program finished ?"
+    | Goto x -> failwith "[3XX] GOTO should never be a node action - this is a bug")
+;;
+
+let update_top_node (top_node : gss_node) =
+  Stack.(
+    fun curr_stack ->
+      let new_top_node = NodeMap.find top_node.state curr_stack.top in
+      if NodeIdSet.is_empty new_top_node.parents
+      then (
+        HashtblCustom.remove curr_stack.nodes top_node.id;
+        return { curr_stack with top = NodeMap.remove top_node.state curr_stack.top })
+      else (
+        let diff_a = NodeIdSet.diff new_top_node.parents top_node.parents in
+        let diff_b = NodeIdSet.diff top_node.parents new_top_node.parents in
+        return
+          (match NodeIdSet.is_empty diff_a, NodeIdSet.is_empty diff_b with
+           (* True a -> no new parents -> no top node got this ; True b -> no parents removed -> no reductions *)
+           | true, true ->
+             let updated_top = NodeMap.remove top_node.state curr_stack.top in
+             { curr_stack with top = updated_top }
+           | true, false ->
+             HashtblCustom.remove curr_stack.nodes top_node.id;
+             curr_stack
+           | false, _ -> curr_stack)))
+;;
+
+let apply_top_node_actions (c : glr_config) top_node =
+  Stack.(
+    get
+    >>= fun curr_stack ->
+    let updated_stack =
+      List.fold_left
+        (fun s a -> run_stack (apply_action c top_node a) s |> fst)
+        curr_stack
+        top_node.next_actions
+    in
+    update_top_node top_node updated_stack
+    >>= fun stack_with_updated_top_nodes -> put stack_with_updated_top_nodes)
+;;
+
+let apply_actions_to_stack (c : glr_config) =
+  Stack.(
+    get
+    >>= fun curr_stack ->
+    let updated_stack =
+      NodeMap.fold
+        (fun _ top_node s -> run_stack (apply_top_node_actions c top_node) s |> snd)
+        curr_stack.top
+        curr_stack
+    in
+    let cleaned_top =
+      NodeMap.filter
+        (fun state node -> HashtblCustom.mem updated_stack.nodes node.id)
+        updated_stack.top
+      (* TODO : Might wanna add the next actions here. Makes more sense logically imo. Actually, we don't have the tokens though. Do we ? Check once and update here.*)
+    in
+    put { updated_stack with top = cleaned_top } >>= fun _ -> get)
+;;
+
+(* This func requires me to refactor everything else, since I have no way of knowing which node got reduced. Fuck me. Seriously. *)
+(* let rec apply_reduce_till_token_consumed *)
+(*           (c : glr_config) *)
+(*           (top_node : gss_node) *)
+(*           (pr : production_rule) *)
+(*   = *)
+(*   Stack.( *)
+(*     get *)
+(*     >>= fun s -> *)
+(*     apply_reduce c top_node pr *)
+(*     >>= fun _ -> *)
+(*     get *)
+(*     >>= fun updated_stack -> *)
+(*     (* let updated_node = update_actions_for_top_node (get_parse_table c updated_stack) in *) *)
+(*     (* The problem here is I need a way of finding the "reduced" node and finding it's actions to apply recusively until it's a shift. Or even do shifts ?*) *)
+(*     >>= fun updated_stack_with_actions -> apply_top_node_actions) *)
+(* ;; *)
