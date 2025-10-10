@@ -3,6 +3,8 @@ open Domain_types
 type node_state = NodeState of int
 type node_id = NodeId of int
 
+let unpack_state (NodeState x) = x
+let unpack_id (NodeId x) = x
 let increment_node_id (NodeId x) = NodeId (x + 1)
 
 type direction_t =

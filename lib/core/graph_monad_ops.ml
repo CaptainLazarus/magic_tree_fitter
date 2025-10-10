@@ -1,8 +1,7 @@
 open Gss
 open Glr_utils
 open Stack_ops
-
-(* open Dump *)
+open Dump
 open Domain_types
 
 let initialise_stacks_helper c g =
@@ -58,7 +57,7 @@ let all_blocked (g : graph) =
       g.stacks
 ;;
 
-let rec construct_ast () =
+let rec construct_ast (n : int) =
   (* 1. Run actions on stacks *)
   (* 2. Update next token *)
   (* 3. If blocked, return. If not, goto 1 *)
@@ -67,30 +66,42 @@ let rec construct_ast () =
     >>= fun (c : glr_config) ->
     get
     >>= fun (g : graph) ->
-    let updated_stacks =
-      List.map
-        (fun s ->
-           let s', _ = Stack.(run_stack (consume_token c) s) in
-           s')
-        g.stacks
-      |> List.map (update_stack_with_actions c)
-      |> List.filter (fun s -> not (NodeMap.is_empty s.top))
-    in
-    (*
-       So...couple of things here.
+    if n > 10
+    then return g
+    else (
+      (* Consume token -> Update top nodes with actions -> filter top nodes with empty action lists *)
+      (* dump_stacks g; *)
+      let updated_stacks =
+        List.map
+          (fun s ->
+             let s', _ = Stack.(run_stack (consume_token c) s) in
+             s')
+          g.stacks
+        |> List.map (update_stack_with_actions c)
+        |> List.filter (fun s -> not (NodeMap.is_empty s.top))
+      in
+      (*
+         So...couple of things here.
     1. If there's a blocked reduction, then don't advance the token ?
     2. If no shifts occured, then all blocked (using the new definition of reduce -> recursive reduce till something else). In which case, no point of advancement.
     3. If a single shift occurs, dump the other stacks ? Depends. If they're blocked, then advance only that stack. advance global token otherwise. That reduce func needs to be checked.
+    3a. Flip side is globally advacne for atleast one shift, since blocked reductions don't advacne anyway.
     
     All of this is really stupid. either the stack consumed the input, which is the default assumption, or it has a blocked reduction. There's literally no in-between. So just check for a blocked reduction. What am I missing.
-    *)
-    let g' =
-      { stacks = updated_stacks
-      ; forward_tokens = List.tl g.forward_tokens
-      ; reverse_tokens = List.tl g.reverse_tokens
-      }
-    in
-    put g' >>= fun _ -> if all_blocked g' then return g' else construct_ast ())
+      *)
+      let g' =
+        { stacks = updated_stacks
+        ; forward_tokens = List.tl g.forward_tokens
+        ; reverse_tokens = List.tl g.reverse_tokens
+        }
+      in
+      put g'
+      >>= fun _ ->
+      if all_blocked g'
+      then (
+        dump_stacks g';
+        return g')
+      else construct_ast (n + 1)))
 ;;
 
 let ( >>+ ) xs f = List.concat_map f xs

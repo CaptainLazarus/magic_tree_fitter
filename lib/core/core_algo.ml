@@ -109,5 +109,5 @@ let get_ast parse_tables =
   let config, initial_graph = setup_glr parse_tables in
   (* Run the monadic computation with the setup *)
   run_glr initialise_stacks config initial_graph
-  |> fun (c, g) -> run_glr construct_ast () c g
+  |> fun (c, g) -> run_glr construct_ast 0 c g
 ;;

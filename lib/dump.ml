@@ -35,6 +35,12 @@ let string_of_production = function
   | symbols -> String.concat " " (List.map string_of_symbol symbols)
 ;;
 
+let dump_rule (rule : production_rule) =
+  let lhs_str = string_of_symbol rule.lhs in
+  let rhs_str = string_of_production rule.rhs in
+  Printf.printf "%s → %s\n" lhs_str rhs_str
+;;
+
 let dump_rules (rules : (symbol * symbol list) list) =
   print_endline "\nRules : ---------------\n";
   List.iter
@@ -161,6 +167,13 @@ let dump_parse_table_to_file
 
 let dump_token_info { token; lexeme } =
   Printf.sprintf "{ token = %s; lexeme = \"%s\" }" (string_of_symbol token) lexeme
+;;
+
+let dump_token_list xs =
+  List.iter
+    (fun x ->
+       Printf.printf "{ token = %s; lexeme = \"%s\" }" (string_of_symbol x.token) x.lexeme)
+    xs
 ;;
 
 let dump_edgeset edges =
@@ -300,13 +313,9 @@ let dump_gss_node (n : gss_node) : unit =
       (function
         | Shift s -> Printf.sprintf "S%d" s
         | Reduce pr ->
-          let lhs =
-            match pr.lhs with
-            | Terminal t -> t
-            | NonTerminal nt -> nt
-            | _ -> "?"
-          in
-          Printf.sprintf "R(%s→...)" lhs
+          let lhs = string_of_symbol pr.lhs in
+          let rhs = string_of_production pr.rhs in
+          Printf.sprintf "R(%s→%s)" lhs rhs
         | Accept -> "Acc"
         | Goto s -> Printf.sprintf "G%d" s)
       n.next_actions
@@ -360,4 +369,18 @@ let dump_stack (s : stack) : unit =
 (* ------------------------------------------------------------------ *)
 (* dump every stack in a graph                                        *)
 (* ------------------------------------------------------------------ *)
-let dump_stacks (g : graph) : unit = List.iter dump_stack g.stacks
+let dump_stacks (g : graph) : unit =
+  Printf.printf
+    "\n\n ==========================Dumping Stacks============================\n";
+  List.iter dump_stack g.stacks
+;;
+
+let dump_node_states = List.iter (fun x -> Printf.printf " %d " (unpack_state x))
+let dump_path = List.iter (fun x -> Printf.printf " %d " (unpack_state x.state))
+
+let dump_paths =
+  List.iter (fun path ->
+    Printf.printf "Path -> ";
+    dump_path path;
+    Printf.printf "\n")
+;;
