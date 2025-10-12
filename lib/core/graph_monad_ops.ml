@@ -39,7 +39,10 @@ let initialise_stacks =
 
 let all_blocked (g : graph) =
   if g.forward_tokens = [] || g.reverse_tokens = []
-  then true
+  then
+    (* dump_token_list g.forward_tokens; *)
+    (* dump_token_list g.reverse_tokens; *)
+    true
   else
     List.for_all
       (fun stack ->
@@ -95,12 +98,14 @@ let rec construct_ast (n : int) =
         ; reverse_tokens = List.tl g.reverse_tokens
         }
       in
+      dump_token_list g.reverse_tokens;
+      dump_token_list g.forward_tokens;
       put g'
       >>= fun _ ->
       if all_blocked g'
-      then (
-        dump_stacks g';
-        return g')
+      then
+        (* dump_stacks g'; *)
+        return g'
       else construct_ast (n + 1)))
 ;;
 

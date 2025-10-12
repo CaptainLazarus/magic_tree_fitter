@@ -170,10 +170,12 @@ let dump_token_info { token; lexeme } =
 ;;
 
 let dump_token_list xs =
+  Printf.printf "\n";
   List.iter
     (fun x ->
        Printf.printf "{ token = %s; lexeme = \"%s\" }" (string_of_symbol x.token) x.lexeme)
-    xs
+    xs;
+  if xs = [] then Printf.printf "Empty token List\n"
 ;;
 
 let dump_edgeset edges =
