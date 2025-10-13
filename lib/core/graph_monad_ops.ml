@@ -8,13 +8,29 @@ let initialise_stacks_helper c g =
   let forward_anchor_nodes, backward_anchor_nodes =
     get_anchor_nodes c.parse_tables c.anchor_symbol
   in
+  (* List.iter dump_gss_node forward_anchor_nodes; *)
+  (* List.iter dump_gss_node backward_anchor_nodes; *)
+  (* FIX : Mistake here. You should be using the first forward and backward nodes. The anchor is consumed by the root itself *)
   let forward_stacks =
-    List.map (initialise_stack Forward c.anchor_symbol) forward_anchor_nodes
+    List.map
+      (initialise_stack
+         Forward
+         (* HACK : Asssumes non empty list initally. Might be a problem. Check *)
+         (List.hd g.forward_tokens))
+      forward_anchor_nodes
   in
   let backward_stacks =
-    List.map (initialise_stack Backward c.anchor_symbol) backward_anchor_nodes
+    List.map
+      (initialise_stack
+         Backward
+         (* HACK : Asssumes non empty list initally. Might be a problem. Check *)
+         (List.hd g.reverse_tokens))
+      backward_anchor_nodes
   in
-  { g with stacks = forward_stacks @ backward_stacks }
+  { stacks = forward_stacks @ backward_stacks
+  ; forward_tokens = List.tl g.forward_tokens
+  ; reverse_tokens = List.tl g.reverse_tokens
+  }
 ;;
 
 let initialise_stacks =
@@ -69,11 +85,11 @@ let rec construct_ast (n : int) =
     >>= fun (c : glr_config) ->
     get
     >>= fun (g : graph) ->
-    if n > 10
+    if n > 1000
     then return g
     else (
       (* Consume token -> Update top nodes with actions -> filter top nodes with empty action lists *)
-      (* dump_stacks g; *)
+      dump_stacks g;
       let updated_stacks =
         List.map
           (fun s ->
@@ -94,12 +110,14 @@ let rec construct_ast (n : int) =
       *)
       let g' =
         { stacks = updated_stacks
-        ; forward_tokens = List.tl g.forward_tokens
-        ; reverse_tokens = List.tl g.reverse_tokens
+        ; forward_tokens =
+            (if g.forward_tokens = [] then [] else List.tl g.forward_tokens)
+        ; reverse_tokens =
+            (if g.reverse_tokens = [] then [] else List.tl g.reverse_tokens)
         }
       in
-      dump_token_list g.reverse_tokens;
-      dump_token_list g.forward_tokens;
+      (* dump_token_list g.reverse_tokens; *)
+      (* dump_token_list g.forward_tokens; *)
       put g'
       >>= fun _ ->
       if all_blocked g'

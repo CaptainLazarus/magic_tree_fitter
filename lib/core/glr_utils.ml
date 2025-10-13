@@ -21,6 +21,13 @@ let initial_states_for_terminal
   | [ forward; reverse ] ->
     let ltr = extract_shift_states forward in
     let rtl = extract_shift_states reverse in
+    (* List.iter *)
+    (*   (fun (NodeState s1, NodeState s2) -> Printf.printf "\n LTR : %d -> %d \n" s1 s2) *)
+    (*   ltr; *)
+    (* List.iter *)
+    (*   (fun (NodeState s1, NodeState s2) -> Printf.printf "\n RTL : %d -> %d \n" s1 s2) *)
+    (*   rtl; *)
+    (* assert false *)
     ltr, rtl
   | _ -> failwith "Expected exactly two parse tables"
 ;;

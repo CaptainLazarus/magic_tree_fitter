@@ -13,10 +13,7 @@ let initialise_stack direction next_token node =
     { root = node
     ; curr_id = 1
     ; top = NodeMap.empty
-    ; (* Edit : Fixed below*)
-      (* Kinda wrong. *)
-      (*We want to actually add the node.edge.y node here. children, basically *)
-      next_token
+    ; next_token
     ; direction
     ; nodes = HashtblCustom.create 100
     }
@@ -27,7 +24,7 @@ let initialise_stack direction next_token node =
   let top_list, NodeId final_id =
     EdgeSet.fold
       (fun el acc ->
-         let sym, y = el in
+         let _, y = el in
          let top_acc, curr_id = acc in
          let n, new_id =
            create_and_add_node

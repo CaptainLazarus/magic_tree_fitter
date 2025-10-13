@@ -17,7 +17,16 @@ let partition_actions acts =
 let update_actions_for_top_node (top_node : gss_node) parse_table (s : stack) =
   let next_actions =
     get_next_actions_for_node top_node.state s.next_token.token parse_table
-    |> partition_actions
+    |> fun actions ->
+    (* print_string (dump_token_info s.next_token); *)
+    (* Printf.printf "\n"; *)
+    (* dump_gss_node top_node; *)
+    (* List.iter *)
+    (*   (fun a -> *)
+    (*      Printf.printf "\n"; *)
+    (*      print_string (string_of_action a)) *)
+    (*   actions; *)
+    partition_actions actions
   in
   let updated_node = { top_node with next_actions } in
   HashtblCustom.replace s.nodes top_node.id updated_node;
@@ -111,7 +120,7 @@ let add_node_to_top parent_node transition_symbol child_node =
 (* NOTE :  If yes, how do I check the new parents ? Copy list and then check double one level above ? *)
 let apply_shift (top_node : gss_node) (NodeState x : node_state) =
   Printf.printf "[4] Shifting %d state\n" x;
-  (* dump_gss_node top_node; *)
+  dump_gss_node top_node;
   Stack.(
     get
     >>= fun s ->
@@ -342,40 +351,33 @@ let clear_top_node_actions (s : stack) (top_node : gss_node) =
 
 (* Need to clear all the actions from the top node before anything btw *)
 let update_top_node (node : gss_node) =
-  Printf.printf "[XX] Updating top node";
+  Printf.printf "\n[XX] Updating top node\n";
   Stack.(
     get
     >>= fun s ->
-    (* dump_stack s; *)
-    (* dump_gss_node node; *)
     let top_node, curr_stack = clear_top_node_actions s node in
-    (* dump_stack curr_stack; *)
-    (* dump_gss_node top_node; *)
+    dump_gss_node top_node;
     let new_top_node_opt = NodeMap.find_opt top_node.state curr_stack.top in
     match new_top_node_opt with
-    | None -> failwith "[UPDATE TOP NODE] No top node found"
+    | None -> failwith "\n[UPDATE TOP NODE] No top node found\n"
     | Some new_top_node ->
       (* top_node has no parents, remove from hashtbl and top *)
       if NodeIdSet.is_empty new_top_node.parents
       then (
-        Printf.printf "[XX] -----------------------";
+        Printf.printf "\n[XX] -----------------------\n";
         (* dump_nodes curr_stack; *)
         HashtblCustom.remove curr_stack.nodes top_node.id;
         (* dump_nodes curr_stack; *)
         return { curr_stack with top = NodeMap.remove top_node.state curr_stack.top })
       else (
+        (* Basically, if a new parent exists, then it's still in top. otherwise remove *)
         let diff_a = NodeIdSet.diff new_top_node.parents top_node.parents in
-        let diff_b = NodeIdSet.diff top_node.parents new_top_node.parents in
         return
-          (match NodeIdSet.is_empty diff_a, NodeIdSet.is_empty diff_b with
-           (* True a -> no new parents -> no top node got this ; True b -> no parents removed -> no reductions *)
-           | true, true ->
+          (match NodeIdSet.is_empty diff_a with
+           | true ->
              let updated_top = NodeMap.remove top_node.state curr_stack.top in
              { curr_stack with top = updated_top }
-           | true, false ->
-             HashtblCustom.remove curr_stack.nodes top_node.id;
-             curr_stack
-           | false, _ -> curr_stack)))
+           | false -> curr_stack)))
 ;;
 
 (* Split this func *)
@@ -406,7 +408,6 @@ let rec apply_reduce_till_token_consumed
            in
            { acc with top = NodeMap.add ns top_node_with_actions acc.top })
         top_node_states
-        (* updated_s *)
         curr_stack
     in
     Printf.printf "\n[5.02] Dumping Updated Stack with actions\n";
@@ -415,7 +416,6 @@ let rec apply_reduce_till_token_consumed
     >>= fun _ ->
     get
     >>= fun s' ->
-    (* FIX : You're using old top nodes. Why ? *)
     Printf.printf
       "\n[5.03] Now applying actions to the top_node ? Again ? Not the updated list\n";
     let recursive_top_node_list =
@@ -431,14 +431,16 @@ let rec apply_reduce_till_token_consumed
       List.fold_left
         (fun s1 curr_top_node ->
            List.fold_left
-             (fun s2 a -> run_stack (apply_action c top_node a) s2 |> snd)
+             (fun s2 a -> run_stack (apply_action c curr_top_node a) s2 |> snd)
              s1
              curr_top_node.next_actions)
         s'
         recursive_top_node_list
     in
+    List.iter dump_gss_node recursive_top_node_list;
     put updated_s'
     >>= fun _ ->
+    (* FIX : There's a recursive llist here. All the nodes need to be updated *)
     update_top_node top_node
     >>= fun stack_with_updated_top_nodes -> put stack_with_updated_top_nodes)
 
@@ -484,7 +486,7 @@ let apply_actions_to_stack (c : glr_config) =
     get
     >>= fun curr_stack ->
     Printf.printf "[1] Applying actions to stack\n";
-    print_stack_top curr_stack;
+    (* print_stack_top curr_stack; *)
     let updated_stack =
       NodeMap.fold
         (fun _ top_node s -> run_stack (apply_top_node_actions c top_node) s |> snd)
