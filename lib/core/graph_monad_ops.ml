@@ -96,6 +96,7 @@ let rec construct_ast (n : int) =
              let s', _ = Stack.(run_stack (consume_token c) s) in
              s')
           g.stacks
+        (* FIX : I need to advance the token here. Updating here makes no sense *)
         |> List.map (update_stack_with_actions c)
         |> List.filter (fun s -> not (NodeMap.is_empty s.top))
       in

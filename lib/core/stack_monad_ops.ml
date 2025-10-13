@@ -349,19 +349,20 @@ let clear_top_node_actions (s : stack) (top_node : gss_node) =
     top_node, s
 ;;
 
-(* Need to clear all the actions from the top node before anything btw *)
+(* FIX : Audit this func *)
 let update_top_node (node : gss_node) =
   Printf.printf "\n[XX] Updating top node\n";
   Stack.(
     get
     >>= fun s ->
     let top_node, curr_stack = clear_top_node_actions s node in
-    dump_gss_node top_node;
+    (* dump_gss_node top_node; *)
     let new_top_node_opt = NodeMap.find_opt top_node.state curr_stack.top in
     match new_top_node_opt with
     | None -> failwith "\n[UPDATE TOP NODE] No top node found\n"
     | Some new_top_node ->
       (* top_node has no parents, remove from hashtbl and top *)
+      (* dump_gss_node new_top_node; *)
       if NodeIdSet.is_empty new_top_node.parents
       then (
         Printf.printf "\n[XX] -----------------------\n";
@@ -375,9 +376,13 @@ let update_top_node (node : gss_node) =
         return
           (match NodeIdSet.is_empty diff_a with
            | true ->
+             Printf.printf "\n++True++\n";
              let updated_top = NodeMap.remove top_node.state curr_stack.top in
+             dump_stack { curr_stack with top = updated_top };
              { curr_stack with top = updated_top }
-           | false -> curr_stack)))
+           | false ->
+             Printf.printf "\n++False++\n";
+             curr_stack)))
 ;;
 
 (* Split this func *)
@@ -389,10 +394,9 @@ let rec apply_reduce_till_token_consumed
   Stack.(
     apply_reduce c top_node pr
     >>= fun updated_top_nodes ->
-    (* dump_node_states updated_top_nodes; *)
+    dump_node_states updated_top_nodes;
     get
     (* FIX : Update top node is a completely unweildy func. Rework yesterday *)
-    (* update_top_node top_node *)
     >>= fun curr_stack ->
     Printf.printf "\n[5.01] Dumping Updated Stack without actions\n";
     (* dump_stack curr_stack; *)
@@ -411,7 +415,7 @@ let rec apply_reduce_till_token_consumed
         curr_stack
     in
     Printf.printf "\n[5.02] Dumping Updated Stack with actions\n";
-    (* dump_stack updated_stacks_with_actions; *)
+    dump_stack updated_stacks_with_actions;
     put updated_stacks_with_actions
     >>= fun _ ->
     get
@@ -431,18 +435,19 @@ let rec apply_reduce_till_token_consumed
       List.fold_left
         (fun s1 curr_top_node ->
            List.fold_left
-             (fun s2 a -> run_stack (apply_action c curr_top_node a) s2 |> snd)
+             (fun s2 a ->
+                run_stack
+                  (apply_action c curr_top_node a
+                   >>= fun _ ->
+                   update_top_node curr_top_node >>= fun final_stack -> put final_stack)
+                  s2
+                |> snd)
              s1
              curr_top_node.next_actions)
         s'
         recursive_top_node_list
     in
-    List.iter dump_gss_node recursive_top_node_list;
-    put updated_s'
-    >>= fun _ ->
-    (* FIX : There's a recursive llist here. All the nodes need to be updated *)
-    update_top_node top_node
-    >>= fun stack_with_updated_top_nodes -> put stack_with_updated_top_nodes)
+    put updated_s')
 
 (* TODO : Use nodestate to pull the node from nodemap and then apply actions on that. Straightforward, since state is the key *)
 (* let updated_node = update_actions_for_top_node (get_parse_table c updated_stack) in *)
@@ -456,9 +461,7 @@ and apply_action (c : glr_config) (top_node : gss_node) (a : action) =
     Printf.printf "[3] Action routing\n";
     match a with
     | Shift x -> apply_shift top_node (NodeState x)
-    | Reduce pr ->
-      apply_reduce_till_token_consumed c top_node pr
-      >>= fun updated_stack -> return updated_stack
+    | Reduce pr -> apply_reduce_till_token_consumed c top_node pr
     | Accept -> failwith "[2XX] Program finished ?"
     | Goto x -> failwith "[3XX] GOTO should never be a node action - this is a bug")
 ;;
@@ -493,6 +496,7 @@ let apply_actions_to_stack (c : glr_config) =
         curr_stack.top
         curr_stack
     in
+    (* this func is pointless. We're not removing any fucking nodes anymore *)
     let cleaned_top =
       NodeMap.filter
         (fun state node -> HashtblCustom.mem updated_stack.nodes node.id)
