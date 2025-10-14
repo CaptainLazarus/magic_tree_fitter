@@ -8,9 +8,6 @@ let initialise_stacks_helper c g =
   let forward_anchor_nodes, backward_anchor_nodes =
     get_anchor_nodes c.parse_tables c.anchor_symbol
   in
-  (* List.iter dump_gss_node forward_anchor_nodes; *)
-  (* List.iter dump_gss_node backward_anchor_nodes; *)
-  (* FIX : Mistake here. You should be using the first forward and backward nodes. The anchor is consumed by the root itself *)
   let forward_stacks =
     List.map
       (initialise_stack
@@ -54,26 +51,26 @@ let initialise_stacks =
 ;;
 
 let all_blocked (g : graph) =
-  if g.forward_tokens = [] || g.reverse_tokens = []
-  then
-    (* dump_token_list g.forward_tokens; *)
-    (* dump_token_list g.reverse_tokens; *)
-    true
-  else
-    List.for_all
-      (fun stack ->
-         NodeMap.for_all
-           (fun _ node ->
-              List.for_all
-                (fun action ->
-                   match action with
-                   | Reduce pr -> List.mem pr node.blocked_reductions
-                   | _ -> false) (* Shift/Goto/Accept mean we should continue *)
-                node.next_actions)
-           (* || node.next_actions = []) (* Empty actions also mean blocked *) *)
-           (* This is commented out since the empty action lists get filtered out later.*)
-           stack.top)
-      g.stacks
+  (* if g.forward_tokens = [] || g.reverse_tokens = [] *)
+  (* then *)
+  (* dump_token_list g.forward_tokens; *)
+  (* dump_token_list g.reverse_tokens; *)
+  (*   true *)
+  (* else *)
+  List.for_all
+    (fun stack ->
+       NodeMap.for_all
+         (fun _ node ->
+            List.for_all
+              (fun action ->
+                 match action with
+                 | Reduce pr -> List.mem pr node.blocked_reductions
+                 | _ -> false) (* Shift/Goto/Accept mean we should continue *)
+              node.next_actions)
+         (* || node.next_actions = []) (* Empty actions also mean blocked *) *)
+         (* This is commented out since the empty action lists get filtered out later.*)
+         stack.top)
+    g.stacks
 ;;
 
 let rec construct_ast (n : int) =
@@ -97,6 +94,7 @@ let rec construct_ast (n : int) =
              s')
           g.stacks
         (* FIX : I need to advance the token here. Updating here makes no sense *)
+        (* |> List.map (update_stack_next_token g) *)
         |> List.map (update_stack_with_actions c)
         |> List.filter (fun s -> not (NodeMap.is_empty s.top))
       in

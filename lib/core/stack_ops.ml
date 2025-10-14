@@ -58,6 +58,27 @@ let all_blocked (stacks : stack list) =
     stacks
 ;;
 
+let update_stack_next_token (g : graph) (s : stack) =
+  let is_blocked =
+    NodeMap.fold
+      (fun _ curr_node blocked -> curr_node.blocked_reductions <> [] || blocked)
+      s.top
+      false
+  in
+  if is_blocked
+  then s
+  else (
+    match s.direction with
+    | Forward ->
+      if g.forward_tokens <> []
+      then { s with next_token = List.hd g.forward_tokens }
+      else s
+    | Backward ->
+      if g.reverse_tokens <> []
+      then { s with next_token = List.hd g.reverse_tokens }
+      else s)
+;;
+
 (* Apply the specific action. GOTO and shift are the same. Reduce leads to a goto and then ends. *)
 (* After all the actions are done, remove the top node ? Only if not in nodes table *)
 

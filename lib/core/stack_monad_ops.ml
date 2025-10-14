@@ -1,7 +1,7 @@
 open Gss
 open Glr_utils
 open Domain_types
-open Dump
+(* open Dump *)
 
 let partition_actions acts =
   let rs, other =
@@ -120,7 +120,7 @@ let add_node_to_top parent_node transition_symbol child_node =
 (* NOTE :  If yes, how do I check the new parents ? Copy list and then check double one level above ? *)
 let apply_shift (top_node : gss_node) (NodeState x : node_state) =
   Printf.printf "[4] Shifting %d state\n" x;
-  dump_gss_node top_node;
+  (* dump_gss_node top_node; *)
   Stack.(
     get
     >>= fun s ->
@@ -378,7 +378,7 @@ let update_top_node (node : gss_node) =
            | true ->
              Printf.printf "\n++True++\n";
              let updated_top = NodeMap.remove top_node.state curr_stack.top in
-             dump_stack { curr_stack with top = updated_top };
+             (* dump_stack { curr_stack with top = updated_top }; *)
              { curr_stack with top = updated_top }
            | false ->
              Printf.printf "\n++False++\n";
@@ -394,7 +394,7 @@ let rec apply_reduce_till_token_consumed
   Stack.(
     apply_reduce c top_node pr
     >>= fun updated_top_nodes ->
-    dump_node_states updated_top_nodes;
+    (* dump_node_states updated_top_nodes; *)
     get
     (* FIX : Update top node is a completely unweildy func. Rework yesterday *)
     >>= fun curr_stack ->
@@ -415,7 +415,7 @@ let rec apply_reduce_till_token_consumed
         curr_stack
     in
     Printf.printf "\n[5.02] Dumping Updated Stack with actions\n";
-    dump_stack updated_stacks_with_actions;
+    (* dump_stack updated_stacks_with_actions; *)
     put updated_stacks_with_actions
     >>= fun _ ->
     get
