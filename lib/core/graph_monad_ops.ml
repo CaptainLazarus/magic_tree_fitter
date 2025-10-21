@@ -1,7 +1,8 @@
 open Gss
 open Glr_utils
 open Stack_ops
-open Dump
+
+(* open Dump *)
 open Domain_types
 
 let initialise_stacks_helper c g =
@@ -86,7 +87,8 @@ let rec construct_ast (n : int) =
     then return g
     else (
       (* Consume token -> Update top nodes with actions -> filter top nodes with empty action lists *)
-      dump_stacks g;
+      (* dump_stacks g; *)
+      Printf.printf "\n Stacks length = %d \n" (List.length g.stacks);
       let updated_stacks =
         List.map
           (fun s ->
@@ -94,7 +96,7 @@ let rec construct_ast (n : int) =
              s')
           g.stacks
         (* FIX : I need to advance the token here. Updating here makes no sense *)
-        (* |> List.map (update_stack_next_token g) *)
+        |> List.map (update_stack_next_token g)
         |> List.map (update_stack_with_actions c)
         |> List.filter (fun s -> not (NodeMap.is_empty s.top))
       in

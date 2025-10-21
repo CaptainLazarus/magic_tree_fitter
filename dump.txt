@@ -1,465 +1,402 @@
 Dump complete
 Dump complete
-[1] Applying actions to stack
+Node[id=1, state=22]
+  edges: []
+  parents: {0}
+  next_actions: []
+  blocked_reductions: []
 
-Stack.top (1 nodes):
-  Node[id=1, state=28]
-    edges: []
-    parents: {0}
-    next_actions: [R(s_expression→"ATOM")]
-    blocked_reductions: []
+Node[id=1, state=23]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-------
-[2] Applying top node actions to stack
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.2] Applying Path Reduction
-[5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
-[5.12] Returning from this func
+Node[id=1, state=22]
+  edges: []
+  parents: {0}
+  next_actions: []
+  blocked_reductions: []
 
-[5.01] Dumping Updated Stack without actions
+Node[id=1, state=23]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-[5.02] Dumping Updated Stack with actions
+Node[id=1, state=22]
+  edges: []
+  parents: {0}
+  next_actions: []
+  blocked_reductions: []
 
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[3] Action routing
-[4] Shifting 28 state
-[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[1] Applying actions to stack
+Node[id=1, state=21]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-Stack.top (1 nodes):
-  Node[id=1, state=28]
-    edges: []
-    parents: {0}
-    next_actions: [R(s_expression→"ATOM")]
-    blocked_reductions: []
+Node[id=1, state=22]
+  edges: []
+  parents: {0}
+  next_actions: []
+  blocked_reductions: []
 
-------
-[2] Applying top node actions to stack
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.2] Applying Path Reduction
-[5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
-[5.12] Returning from this func
+Node[id=1, state=21]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-[5.01] Dumping Updated Stack without actions
+Node[id=1, state=23]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-[5.02] Dumping Updated Stack with actions
+Node[id=1, state=21]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[3] Action routing
-[4] Shifting 28 state
-[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[1] Applying actions to stack
+Node[id=1, state=20]
+  edges: []
+  parents: {0}
+  next_actions: []
+  blocked_reductions: []
 
-Stack.top (1 nodes):
-  Node[id=1, state=27]
-    edges: []
-    parents: {0}
-    next_actions: [R(s_expression→"ATOM")]
-    blocked_reductions: []
+Node[id=1, state=21]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-------
-[2] Applying top node actions to stack
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.2] Applying Path Reduction
-[5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
-[5.12] Returning from this func
+Node[id=1, state=23]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-[5.01] Dumping Updated Stack without actions
 
-[5.02] Dumping Updated Stack with actions
+ Stacks length = 12 
+[5] Reducing s_expression → "ATOM"
+Node[id=1, state=27]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[3] Action routing
-[4] Shifting 28 state
-[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[1] Applying actions to stack
-
-Stack.top (1 nodes):
-  Node[id=1, state=28]
-    edges: []
-    parents: {0}
-    next_actions: [R(s_expression→"ATOM")]
-    blocked_reductions: []
-
-------
-[2] Applying top node actions to stack
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.2] Applying Path Reduction
-[5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
-[5.12] Returning from this func
 
 [5.01] Dumping Updated Stack without actions
 
-[5.02] Dumping Updated Stack with actions
+++True++
 
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[3] Action routing
-[4] Shifting 28 state
-[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[1] Applying actions to stack
+++True++
+[5] Reducing s_expression → "ATOM"
+Node[id=1, state=27]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-Stack.top (1 nodes):
-  Node[id=1, state=26]
-    edges: []
-    parents: {0}
-    next_actions: [R(s_expression→"ATOM")]
-    blocked_reductions: []
-
-------
-[2] Applying top node actions to stack
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.2] Applying Path Reduction
-[5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
-[5.12] Returning from this func
 
 [5.01] Dumping Updated Stack without actions
 
-[5.02] Dumping Updated Stack with actions
+++True++
 
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[3] Action routing
-[4] Shifting 26 state
-[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[1] Applying actions to stack
+++True++
+[5] Reducing s_expression → "ATOM"
+Node[id=1, state=27]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-Stack.top (1 nodes):
-  Node[id=1, state=27]
-    edges: []
-    parents: {0}
-    next_actions: [R(s_expression→"ATOM")]
-    blocked_reductions: []
-
-------
-[2] Applying top node actions to stack
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.2] Applying Path Reduction
-[5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
-[5.12] Returning from this func
 
 [5.01] Dumping Updated Stack without actions
 
-[5.02] Dumping Updated Stack with actions
+++True++
 
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[3] Action routing
-[4] Shifting 28 state
-[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[1] Applying actions to stack
+++True++
+[5] Reducing s_expression → "ATOM"
+Node[id=1, state=27]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-Stack.top (1 nodes):
-  Node[id=1, state=26]
-    edges: []
-    parents: {0}
-    next_actions: [R(s_expression→"ATOM")]
-    blocked_reductions: []
-
-------
-[2] Applying top node actions to stack
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.2] Applying Path Reduction
-[5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
-[5.12] Returning from this func
 
 [5.01] Dumping Updated Stack without actions
 
-[5.02] Dumping Updated Stack with actions
+++True++
 
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[3] Action routing
-[4] Shifting 26 state
-[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[1] Applying actions to stack
+++True++
+[5] Reducing s_expression → "ATOM"
+Node[id=1, state=23]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-Stack.top (1 nodes):
-  Node[id=1, state=28]
-    edges: []
-    parents: {0}
-    next_actions: [R(s_expression→"ATOM")]
-    blocked_reductions: []
-
-------
-[2] Applying top node actions to stack
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.2] Applying Path Reduction
-[5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
-[5.12] Returning from this func
 
 [5.01] Dumping Updated Stack without actions
 
-[5.02] Dumping Updated Stack with actions
+++True++
 
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[3] Action routing
-[4] Shifting 28 state
-[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[1] Applying actions to stack
+++True++
+[5] Reducing s_expression → "ATOM"
+Node[id=1, state=23]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-Stack.top (1 nodes):
-  Node[id=1, state=27]
-    edges: []
-    parents: {0}
-    next_actions: [R(s_expression→"ATOM")]
-    blocked_reductions: []
-
-------
-[2] Applying top node actions to stack
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.2] Applying Path Reduction
-[5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
-[5.12] Returning from this func
 
 [5.01] Dumping Updated Stack without actions
 
-[5.02] Dumping Updated Stack with actions
+++True++
 
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[3] Action routing
-[4] Shifting 28 state
-[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[1] Applying actions to stack
+++True++
+[5] Reducing s_expression → "ATOM"
+Node[id=1, state=21]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-Stack.top (1 nodes):
-  Node[id=1, state=27]
-    edges: []
-    parents: {0}
-    next_actions: [R(s_expression→"ATOM")]
-    blocked_reductions: []
 
-------
-[2] Applying top node actions to stack
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.2] Applying Path Reduction
-[5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
-[5.12] Returning from this func
+[5.01] Dumping Updated Stack without actions
+[5] Reducing s_expression* → s_expression* s_expression
+Node[id=2, state=42]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression*→s_expression* s_expression)]
+  blocked_reductions: []
+
+
+++True++
+
+++True++
+[5] Reducing s_expression → "ATOM"
+Node[id=1, state=21]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
+
+
+[5.01] Dumping Updated Stack without actions
+[5] Reducing s_expression* → s_expression* s_expression
+Node[id=2, state=42]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression*→s_expression* s_expression)]
+  blocked_reductions: []
+
+
+++True++
+
+++True++
+[5] Reducing s_expression → "ATOM"
+Node[id=1, state=23]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
+
 
 [5.01] Dumping Updated Stack without actions
 
-[5.02] Dumping Updated Stack with actions
+++True++
 
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[3] Action routing
-[4] Shifting 28 state
-[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[1] Applying actions to stack
+++True++
+[5] Reducing s_expression → "ATOM"
+Node[id=1, state=21]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-Stack.top (1 nodes):
-  Node[id=1, state=26]
-    edges: []
-    parents: {0}
-    next_actions: [R(s_expression→"ATOM")]
-    blocked_reductions: []
 
-------
-[2] Applying top node actions to stack
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.2] Applying Path Reduction
-[5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
-[5.12] Returning from this func
+[5.01] Dumping Updated Stack without actions
+[5] Reducing s_expression* → s_expression* s_expression
+Node[id=2, state=42]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression*→s_expression* s_expression)]
+  blocked_reductions: []
+
+
+++True++
+
+++True++
+[5] Reducing s_expression → "ATOM"
+Node[id=1, state=21]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
+
+
+[5.01] Dumping Updated Stack without actions
+[5] Reducing s_expression* → s_expression* s_expression
+Node[id=2, state=42]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression*→s_expression* s_expression)]
+  blocked_reductions: []
+
+
+++True++
+
+++True++
+[5] Reducing s_expression → "ATOM"
+Node[id=1, state=23]
+  edges: []
+  parents: {0}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
+
 
 [5.01] Dumping Updated Stack without actions
 
-[5.02] Dumping Updated Stack with actions
+++True++
 
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[3] Action routing
-[4] Shifting 26 state
-[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[1] Applying actions to stack
+++True++
+Node[id=3, state=34]
+  edges: []
+  parents: {2}
+  next_actions: []
+  blocked_reductions: []
 
-Stack.top (1 nodes):
-  Node[id=1, state=28]
-    edges: []
-    parents: {0}
-    next_actions: [R(s_expression→"ATOM")]
-    blocked_reductions: []
+Node[id=3, state=32]
+  edges: []
+  parents: {2}
+  next_actions: []
+  blocked_reductions: []
 
-------
-[2] Applying top node actions to stack
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.2] Applying Path Reduction
-[5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
-[5.12] Returning from this func
+Node[id=3, state=35]
+  edges: []
+  parents: {2}
+  next_actions: [R(s_expression→"RPAREN" s_expression "DOT" s_expression "LPAREN")]
+  blocked_reductions: []
 
-[5.01] Dumping Updated Stack without actions
+Node[id=3, state=33]
+  edges: []
+  parents: {2}
+  next_actions: [R(s_expression→"RPAREN" s_expression "DOT" s_expression "LPAREN")]
+  blocked_reductions: []
 
-[5.02] Dumping Updated Stack with actions
 
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[3] Action routing
-[4] Shifting 28 state
-[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[1] Applying actions to stack
+ Stacks length = 6 
 
-Stack.top (1 nodes):
-  Node[id=1, state=21]
-    edges: []
-    parents: {0}
-    next_actions: [R(s_expression→"ATOM")]
-    blocked_reductions: []
+++True++
 
-------
-[2] Applying top node actions to stack
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.2] Applying Path Reduction
-[5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
-[5.12] Returning from this func
+++True++
 
-[5.01] Dumping Updated Stack without actions
+++True++
 
-[5.02] Dumping Updated Stack with actions
+++True++
+[5] Reducing s_expression → "RPAREN" s_expression "DOT" s_expression "LPAREN"
+Node[id=3, state=35]
+  edges: []
+  parents: {2}
+  next_actions: [R(s_expression→"RPAREN" s_expression "DOT" s_expression "LPAREN")]
+  blocked_reductions: []
 
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
 
-[5.01] Dumping Updated Stack without actions
+++True++
+[5] Reducing s_expression → "RPAREN" s_expression "DOT" s_expression "LPAREN"
+Node[id=3, state=33]
+  edges: []
+  parents: {2}
+  next_actions: [R(s_expression→"RPAREN" s_expression "DOT" s_expression "LPAREN")]
+  blocked_reductions: []
 
-[5.02] Dumping Updated Stack with actions
 
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[1] Applying actions to stack
+++True++
 
-Stack.top (1 nodes):
-  Node[id=1, state=21]
-    edges: []
-    parents: {0}
-    next_actions: [R(s_expression→"ATOM")]
-    blocked_reductions: []
+ Stacks length = 4 
+[5] Reducing s_expression → "ATOM"
+Node[id=4, state=29]
+  edges: []
+  parents: {3}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-------
-[2] Applying top node actions to stack
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.2] Applying Path Reduction
-[5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
-[5.12] Returning from this func
 
 [5.01] Dumping Updated Stack without actions
 
-[5.02] Dumping Updated Stack with actions
+++True++
 
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
+++True++
+[5] Reducing s_expression → "ATOM"
+Node[id=4, state=29]
+  edges: []
+  parents: {3}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-[5.01] Dumping Updated Stack without actions
-
-[5.02] Dumping Updated Stack with actions
-
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[1] Applying actions to stack
-
-Stack.top (1 nodes):
-  Node[id=1, state=21]
-    edges: []
-    parents: {0}
-    next_actions: [R(s_expression→"ATOM")]
-    blocked_reductions: []
-
-------
-[2] Applying top node actions to stack
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.2] Applying Path Reduction
-[5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
-[5.12] Returning from this func
 
 [5.01] Dumping Updated Stack without actions
 
-[5.02] Dumping Updated Stack with actions
+++True++
 
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
+++True++
+[5] Reducing s_expression → "ATOM"
+Node[id=4, state=29]
+  edges: []
+  parents: {3}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-[5.01] Dumping Updated Stack without actions
-
-[5.02] Dumping Updated Stack with actions
-
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[1] Applying actions to stack
-
-Stack.top (1 nodes):
-  Node[id=1, state=20]
-    edges: []
-    parents: {0}
-    next_actions: [R(s_expression→"ATOM")]
-    blocked_reductions: []
-
-------
-[2] Applying top node actions to stack
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.2] Applying Path Reduction
-[5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
-[5.12] Returning from this func
 
 [5.01] Dumping Updated Stack without actions
 
-[5.02] Dumping Updated Stack with actions
+++True++
 
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
+++True++
+[5] Reducing s_expression → "ATOM"
+Node[id=4, state=29]
+  edges: []
+  parents: {3}
+  next_actions: [R(s_expression→"ATOM")]
+  blocked_reductions: []
 
-[5.01] Dumping Updated Stack without actions
-
-[5.02] Dumping Updated Stack with actions
-
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[1] Applying actions to stack
-
-Stack.top (1 nodes):
-  Node[id=1, state=21]
-    edges: []
-    parents: {0}
-    next_actions: [R(s_expression→"ATOM")]
-    blocked_reductions: []
-
-------
-[2] Applying top node actions to stack
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.2] Applying Path Reduction
-[5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
-[5.12] Returning from this func
 
 [5.01] Dumping Updated Stack without actions
 
-[5.02] Dumping Updated Stack with actions
+++True++
 
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[3] Action routing
-[5] Reducing [5.1] Applying Path Reduction Recusively
-[5.11] Path Reduction Recusion Completed
+++True++
 
-[5.01] Dumping Updated Stack without actions
+ Stacks length = 3 
+[5] Reducing s_expression → "LPAREN" s_expression "DOT" s_expression "RPAREN"
+Node[id=6, state=36]
+  edges: []
+  parents: {5}
+  next_actions: [R(s_expression→"LPAREN" s_expression "DOT" s_expression "RPAREN")]
+  blocked_reductions: []
 
-[5.02] Dumping Updated Stack with actions
 
-[5.03] Now applying actions to the top_node ? Again ? Not the updated list
-[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions[XX] Updating top node[XX] Clear Top Node Actions
-{ token = "LPAREN"; lexeme = "(" }
-{ token = "DOT"; lexeme = "." }{ token = "ATOM"; lexeme = "42" }{ token = "RPAREN"; lexeme = ")" }--------
+++True++
+[5] Reducing s_expression → "LPAREN" s_expression "DOT" s_expression "RPAREN"
+Node[id=6, state=37]
+  edges: []
+  parents: {5}
+  next_actions: [R(s_expression→"LPAREN" s_expression "DOT" s_expression "RPAREN")]
+  blocked_reductions: []
+
+
+++True++
+[5] Reducing s_expression → "LPAREN" s_expression "DOT" s_expression "RPAREN"
+Node[id=6, state=35]
+  edges: []
+  parents: {5}
+  next_actions: [R(s_expression→"LPAREN" s_expression "DOT" s_expression "RPAREN")]
+  blocked_reductions: []
+
+
+++True++
+--------

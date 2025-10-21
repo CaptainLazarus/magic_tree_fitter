@@ -19,73 +19,64 @@ let parse_tables = "grammars/lisp.g4" |> extract_grammar |> create_parse_tables;
 let config, initial_graph = setup_glr parse_tables;;
 let c,g = run_glr initialise_stacks config initial_graph;;
 
+
 g.stacks |> List.length;;
 let s1 = List.nth g.stacks 0;;
 dump_nodes s1;;
 print_stack_top s1;;
 
-   let updated_stacks =
-      List.map
-        (fun s ->
-           let s', _ = Stack.(run_stack (apply_actions_to_stack c) s) in
-           Printf.printf "After apply_actions_to_stack:\n";
-           print_stack_top s';
-           s')
-        g.stacks
-      |> (fun sl ->
-      if g.forward_tokens = [] || g.reverse_tokens = []
-      then sl
-      else (
-        let curr_forward_token = List.hd g.forward_tokens in
-        let curr_backward_token = List.hd g.reverse_tokens in
+(*
+let g2, g2' = run_glr construct_ast 0 c g
+
+
+   let updated_stack =
+      NodeMap.fold
+        (fun _ top_node s -> run_stack (apply_top_node_actions c top_node) s |> snd)
+        s1.top
+        s1
+*)
+(*
+let  s2 = consume_token c s1 |> snd;;
+dump_stack s2;;
+*)
+let updated_stacks =
         List.map
           (fun s ->
-             { s with
-               next_token =
-                 (if s.direction = Forward
-                  then curr_forward_token
-                  else curr_backward_token)
-             })
-          sl))
-      |> List.map (update_stack_with_actions c)
-      |> List.filter (fun s -> not (NodeMap.is_empty s.top))
+             let s', _ = Stack.(run_stack (consume_token c) s) in
+             s')
+          g.stacks
+        (* FIX : I need to advance the token here. Updating here makes no sense *)
+        |> List.map (update_stack_next_token g)
+        |> List.map (update_stack_with_actions c)
+        |> List.filter (fun s -> not (NodeMap.is_empty s.top))
 
+ let g' =
+        { stacks = updated_stacks
+        ; forward_tokens =
+            (if g.forward_tokens = [] then [] else List.tl g.forward_tokens)
+        ; reverse_tokens =
+            (if g.reverse_tokens = [] then [] else List.tl g.reverse_tokens)
+        }
 
-updated_stacks |> List.length;;
-let s' = List.nth updated_stacks 0;;
-dump_nodes s';;
-print_stack_top s';;
+let updated_stacks =
+        List.map
+          (fun s ->
+             let s', _ = Stack.(run_stack (consume_token c) s) in
+             s')
+          g'.stacks
+        (* FIX : I need to advance the token here. Updating here makes no sense *)
+;;
+List.iter dump_stack updated_stacks;;
 
+        |> List.map (update_stack_next_token g')
+        |> List.map (update_stack_with_actions c)
+        |> List.filter (fun s -> not (NodeMap.is_empty s.top))
 
-    let g' =
-      { g with
-        stacks =
-          List.map
-            (fun s ->
-               { s with
-                 next_token =
-                   (if s.direction = Forward
-                    then curr_forward_token
-                    else curr_backward_token)
-               })
-            updated_stacks
-      };;
+    let g'' =
+        { stacks = updated_stacks
+        ; forward_tokens =
+            (if g'.forward_tokens = [] then [] else List.tl g'.forward_tokens)
+        ; reverse_tokens =
+            (if g'.reverse_tokens = [] then [] else List.tl g'.reverse_tokens)
+        }
 
-
-g'.stacks |> List.length;;
-let s2 = List.nth g'.stacks 0;;
-dump_nodes s2;;
-print_stack_top s2;;
-
-
-    let g' =
-      { g with
-        forward_tokens = List.tl g.forward_tokens
-      ; reverse_tokens = List.tl g.reverse_tokens
-      }
-
-
-updated_stacks_2 |> List.length;;
-let s'' = List.nth updated_stacks_2 0;;
-dump_nodes s'';;
-print_stack_top s'';;
