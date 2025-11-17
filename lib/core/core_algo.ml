@@ -32,6 +32,8 @@ let token_info_of_json (x : Yojson.Basic.t) : token_info =
   }
 ;;
 
+(* FIX : Check lexemes of common symbols, not tokens from a language *)
+(* FIX : Check anchors for least likely to most likely. Least likely -> better anchors. More quality of anchors -> better quantity of anchors *)
 let most_common_terminal (tokens : token_info list) : token_info option =
   let terminals =
     List.filter

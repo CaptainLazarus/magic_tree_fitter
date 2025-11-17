@@ -333,11 +333,11 @@ let apply_reduce (c : glr_config) (top_node : gss_node) (pr : production_rule) =
       in
       dump_gss_node blocked_top_node;
       HashtblCustom.replace s.nodes blocked_top_node.id blocked_top_node;
-      (* HACK : Leaving this here for now. Preferably, only add should work. Fix is somewhere else, but let's see. *)
       put
         { s with
           top =
             (* NOTE : Why am I removing this ? *)
+            (* FIX : What the absolute hell is going on here ? Why is this being removed ? It's being added back. Nvm *)
             NodeMap.remove top_node.state s.top
             |> NodeMap.add blocked_top_node.state blocked_top_node
         }
@@ -374,45 +374,38 @@ let clear_top_node_actions (s : stack) (top_node : gss_node) =
     top_node, s
 ;;
 
-(* FIX : Audit this func *)
-(* FIX : BLocked reductions come here and die. Fuck me *)
 let update_top_node (node : gss_node) =
   Printf.printf "\n[XX] Updating top node\n";
   dump_gss_node node;
   Stack.(
     get
     >>= fun s ->
-    if node.blocked_reductions <> []
-    then return s
-    else (
-      let top_node, curr_stack = clear_top_node_actions s node in
-      dump_gss_node top_node;
-      let new_top_node_opt = NodeMap.find_opt top_node.state curr_stack.top in
-      match new_top_node_opt with
-      | None -> failwith "\n[UPDATE TOP NODE] No top node found\n"
-      | Some new_top_node ->
+    let top_node, curr_stack = clear_top_node_actions s node in
+    dump_gss_node top_node;
+    let new_top_node_opt = NodeMap.find_opt top_node.state curr_stack.top in
+    match new_top_node_opt with
+    | None -> failwith "\n[UPDATE TOP NODE] No top node found\n"
+    | Some new_top_node ->
+      if new_top_node.blocked_reductions <> []
+      then return s
+      else if
         (* top_node has no parents, remove from hashtbl and top *)
-        (* dump_gss_node new_top_node; *)
-        if NodeIdSet.is_empty new_top_node.parents
-        then (
-          (* Printf.printf "\n[XX] -----------------------\n"; *)
-          (* dump_nodes curr_stack; *)
-          HashtblCustom.remove curr_stack.nodes top_node.id;
-          (* dump_nodes curr_stack; *)
-          return { curr_stack with top = NodeMap.remove top_node.state curr_stack.top })
-        else (
-          (* Basically, if a new parent exists, then it's still in top. otherwise remove *)
-          let diff_a = NodeIdSet.diff new_top_node.parents top_node.parents in
-          return
-            (match NodeIdSet.is_empty diff_a with
-             | true ->
-               Printf.printf "\n++True++\n";
-               let updated_top = NodeMap.remove top_node.state curr_stack.top in
-               (* dump_stack { curr_stack with top = updated_top }; *)
-               { curr_stack with top = updated_top }
-             | false ->
-               Printf.printf "\n++False++\n";
-               curr_stack))))
+        NodeIdSet.is_empty new_top_node.parents
+      then (
+        HashtblCustom.remove curr_stack.nodes top_node.id;
+        return { curr_stack with top = NodeMap.remove top_node.state curr_stack.top })
+      else (
+        (* Basically, if a new parent exists, then it's still in top. otherwise remove *)
+        let diff_a = NodeIdSet.diff new_top_node.parents top_node.parents in
+        return
+          (match NodeIdSet.is_empty diff_a with
+           | true ->
+             Printf.printf "\n++True++\n";
+             let updated_top = NodeMap.remove top_node.state curr_stack.top in
+             { curr_stack with top = updated_top }
+           | false ->
+             Printf.printf "\n++False++\n";
+             curr_stack)))
 ;;
 
 (* Split this func *)

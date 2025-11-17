@@ -1,8 +1,7 @@
 open Gss
 open Glr_utils
 open Stack_ops
-
-(* open Dump *)
+open Dump
 open Domain_types
 
 let initialise_stacks_helper c g =
@@ -13,7 +12,7 @@ let initialise_stacks_helper c g =
     List.map
       (initialise_stack
          Forward
-         (* HACK : Asssumes non empty list initally. Might be a problem. Check *)
+         (* FIX: Asssumes non empty list initally. Might be a problem. Check *)
          (List.hd g.forward_tokens))
       forward_anchor_nodes
   in
@@ -21,7 +20,7 @@ let initialise_stacks_helper c g =
     List.map
       (initialise_stack
          Backward
-         (* HACK : Asssumes non empty list initally. Might be a problem. Check *)
+         (* FIX : Asssumes non empty list initally. Might be a problem. Check *)
          (List.hd g.reverse_tokens))
       backward_anchor_nodes
   in
@@ -95,7 +94,6 @@ let rec construct_ast (n : int) =
              let s', _ = Stack.(run_stack (consume_token c) s) in
              s')
           g.stacks
-        (* FIX : I need to advance the token here. Updating here makes no sense *)
         |> List.map (update_stack_next_token g)
         |> List.map (update_stack_with_actions c)
         |> List.filter (fun s -> not (NodeMap.is_empty s.top))
@@ -122,9 +120,10 @@ let rec construct_ast (n : int) =
       put g'
       >>= fun _ ->
       if all_blocked g'
-      then
-        (* dump_stacks g'; *)
-        return g'
+      then (
+        Printf.printf "\n\n-------------------------FINAL----------------------------\n\n";
+        dump_stacks g';
+        return g')
       else construct_ast (n + 1)))
 ;;
 
